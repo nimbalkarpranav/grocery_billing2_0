@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/productlist.dart';
+import 'package:grocery_billing2_0/profile.dart';
 import '../DataBase/database.dart';
 import '../addproduct.dart';
   // Import the Product List page if you have one
@@ -31,6 +32,17 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ListTile(
+              leading: Icon(Icons.person, color: Colors.blueAccent),
+              title: Text('Profile ', style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Profile()), // Navigate to Product List page
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.list, color: Colors.blueAccent),
               title: Text('Product List', style: TextStyle(fontSize: 18)),
               onTap: () {
@@ -41,6 +53,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
+
             ListTile(
               leading: Icon(Icons.add, color: Colors.blueAccent),
               title: Text('Add Product', style: TextStyle(fontSize: 18)),

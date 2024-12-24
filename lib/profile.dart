@@ -23,18 +23,33 @@ class _ProfileState extends State<Profile> {
         ],
 
       ),
-      body: Container(
-        child: Row(
-          children: [
-            Center(
-              child: Container(
-                child: Icon(Icons.person),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
 
+        children: [
+          Center(
+            child: Container(
+              child: Column(
+
+                children: [
+                  CircleAvatar(
+                    backgroundImage: AssetImage(
+                      'assets/images/propic.jpeg',
+                    ),
+
+
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text("Person Name"),
+
+                ],
               ),
-            )
-          ],
-        ),
-      ),
+            ),
+          )
+        ],
+      )
 
 
     );
