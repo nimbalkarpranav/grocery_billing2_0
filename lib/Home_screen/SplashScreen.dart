@@ -12,13 +12,15 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    Timer(Duration(seconds: 10),(){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Pinscreen(),));
+    Timer(Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Pinscreen()));
     });
-
   }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -26,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.deepPurple, Colors.purpleAccent],
+            colors: [Colors.green, Colors.blue], // Changed colors to green and blue
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -40,14 +42,18 @@ class _SplashScreenState extends State<SplashScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.purple.shade700,
+                  color: Colors.blue, // Adjusted shadow color to blue
                   blurRadius: 15,
                   offset: Offset(0, 10),
                 ),
               ],
             ),
             child: ClipOval(
-              child: Icon(CupertinoIcons.cart,color: Colors.white,size: 70,)
+              child: Icon(
+                CupertinoIcons.cart,
+                color: Colors.white,
+                size: 70,
+              ),
             ),
           ),
         ),

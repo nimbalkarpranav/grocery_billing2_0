@@ -10,17 +10,19 @@ class Pinscreen extends StatefulWidget {
 
 class _PinscreenState extends State<Pinscreen> {
   TextEditingController PinController = TextEditingController();
-  get pinController=>PinController.text.toString();
+  get pinController => PinController.text.toString();
 
-  void PinEnter(){
-    if(pinController=="1234"){
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(),));
+  String pin = "1234";
+
+  void PinEnter() {
+    if (pinController == pin) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -28,7 +30,7 @@ class _PinscreenState extends State<Pinscreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.deepPurple, Colors.purpleAccent],
+            colors: [Colors.green, Colors.blue], // Changed to green and blue
           ),
         ),
         child: Padding(
@@ -63,12 +65,12 @@ class _PinscreenState extends State<Pinscreen> {
                   PinEnter();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purpleAccent,
+                  backgroundColor: Colors.blue, // Changed button color to blue
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  shadowColor: Colors.purple.shade700,
+                  shadowColor: Colors.blue.shade700, // Changed shadow to blue
                   elevation: 8,
                 ),
                 child: Text(
