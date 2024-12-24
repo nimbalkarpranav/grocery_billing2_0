@@ -9,29 +9,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> products = [];
-  List<Map<String, dynamic>> filteredProducts = [];
-  final TextEditingController searchController = TextEditingController();
 
-  // Fetching products from the database
   Future<void> fetchProducts() async {
-    final data = await DBHelper.instance.fetchProducts(); // Ensure this fetches all necessary product details, including 'name' and 'category'
+    final data = await DBHelper.instance.fetchProducts();
     setState(() {
       products = data;
-      filteredProducts = data; // Initially show all products
-    });
-  }
-
-  // Filtering products based on search query
-  void filterProducts(String query) {
-    final results = products.where((product) {
-      final name = product['name'].toLowerCase();
-      final category = product['category'].toLowerCase();
-      final searchLower = query.toLowerCase();
-      return name.contains(searchLower) || category.contains(searchLower);
-    }).toList();
-
-    setState(() {
-      filteredProducts = results;
     });
   }
 
@@ -39,90 +21,102 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     fetchProducts();
-    searchController.addListener(() {
-      filterProducts(searchController.text); // Update filtered products as user types
-    });
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Products')),
+      appBar: AppBar(
+        title: Text('Products', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: Icon(Icons.add, color: Colors.white),
+          onPressed: () {
+            // Navigate to AddProductPage when the icon is tapped
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddProductPage()),
+            ).then((_) {
+              // After returning from AddProductPage, fetch the latest products
+              fetchProducts();
+            });
+          },
+        ),
+        backgroundColor: Colors.blueAccent,
+        elevation: 4,
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
+              decoration: BoxDecoration(color: Colors.blueAccent),
               child: Text(
                 'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Add Product'),
+              leading: Icon(Icons.add, color: Colors.blueAccent),
+              title: Text('Add Product', style: TextStyle(fontSize: 18)),
               onTap: () async {
                 Navigator.pop(context); // Close the drawer
                 await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AddProductPage()),
                 );
-                fetchProducts(); // Refresh the product list
+                fetchProducts(); // Refresh the product list after adding a new product
               },
             ),
           ],
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  labelText: 'Search Products',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+        child: products.isEmpty
+            ? Center(
+          child: Text(
+            'No Products Found',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+          ),
+        )
+            : ListView.builder(
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            final product = products[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.all(16),
+                  title: Text(
+                    product['name'],
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Price: \$${product['price']}',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                      ),
+                      Text(
+                        'Sell Price: \$${product['sellPrice']}',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                      ),
+                      Text(
+                        'Category: ${product['category']}',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                      ),
+                    ],
+                  ),
+                  tileColor: Colors.white,
                 ),
               ),
-            ),
-            // Product List
-            Expanded(
-              child: filteredProducts.isEmpty
-                  ? Center(child: Text('No Products Found'))
-                  : ListView.builder(
-                itemCount: filteredProducts.length,
-                itemBuilder: (context, index) {
-                  final product = filteredProducts[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    child: ListTile(
-                      title: Text(product['name']),
-                      subtitle: Text(
-                        'Price: \$${product['price']} - Sell Price: \$${product['sellPrice']}\n'
-                            'Category: ${product['category']}',
-                      ),
-                      tileColor: Colors.grey[200],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
