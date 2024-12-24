@@ -60,9 +60,22 @@ class _HomePageState extends State<HomePage> {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+              child: Row(
+                children: [
+                  Text(
+                    'Person Name ',
+
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.deepOrange,
+                    maxRadius: 30,
+                    backgroundImage: AssetImage(
+                      'assets/images/propic.jpeg',
+                    ),
+                  ),
+                  IconButton(onPressed: (){}, icon: Icon(Icons.edit_calendar_sharp,size: 33,color: Colors.white60,))
+                ],
               ),
             ),
             ListTile(
