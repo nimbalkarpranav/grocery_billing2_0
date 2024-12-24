@@ -107,8 +107,11 @@ class _AddProductPageState extends State<AddProductPage> {
               SizedBox(height: 7,),
               DropdownButtonFormField<String>(
                 value: selectedCategory,
+                borderRadius: BorderRadius.circular(10),
+
                 items: categories.map((category) {
                   return DropdownMenuItem(
+
                     value: category,
                     child: Text(category),
                   );
