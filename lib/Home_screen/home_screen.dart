@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/profile.dart';
 import '../DataBase/database.dart';
 import '../addproduct.dart';
 
@@ -74,7 +75,9 @@ class _HomePageState extends State<HomePage> {
                       'assets/images/propic.jpeg',
                     ),
                   ),
-                  IconButton(onPressed: (){}, icon: Icon(Icons.edit_calendar_sharp,size: 33,color: Colors.white60,))
+                  IconButton(onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile(),));
+                  }, icon: Icon(Icons.edit_calendar_sharp,size: 33,color: Colors.white60,))
                 ],
               ),
             ),
