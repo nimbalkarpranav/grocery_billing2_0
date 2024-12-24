@@ -16,7 +16,7 @@ class AddCategoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Shivam')),
+      appBar: AppBar(title: Text('Grocery app')),
       
       body: Padding(
         padding: const EdgeInsets.all(16.0),
