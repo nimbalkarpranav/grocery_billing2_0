@@ -75,25 +75,43 @@ class _AddProductPageState extends State<AddProductPage> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Product Name'),
+                decoration: InputDecoration(labelText: 'Product Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10)
+                )),
                 validator: (value) => value!.isEmpty ? 'Enter Product Name' : null,
               ),
+              SizedBox(height: 7,),
               TextFormField(
                 controller: priceController,
-                decoration: InputDecoration(labelText: 'Price'),
+                decoration: InputDecoration(labelText: 'Price',
+                   border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(10)
+                     
+                   )
+                ),
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? 'Enter Price' : null,
               ),
+              SizedBox(height: 7,),
               TextFormField(
                 controller: sellPriceController,
-                decoration: InputDecoration(labelText: 'Sell Price'),
+                decoration: InputDecoration(labelText: 'Sell Price',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)
+
+                    )),
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? 'Enter Sell Price' : null,
               ),
+              SizedBox(height: 7,),
               DropdownButtonFormField<String>(
                 value: selectedCategory,
+                borderRadius: BorderRadius.circular(10),
+
                 items: categories.map((category) {
                   return DropdownMenuItem(
+
                     value: category,
                     child: Text(category),
                   );
@@ -103,12 +121,21 @@ class _AddProductPageState extends State<AddProductPage> {
                     selectedCategory = value;
                   });
                 },
-                decoration: InputDecoration(labelText: 'Category'),
+                decoration: InputDecoration(labelText: 'Category',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)
+
+                    )),
                 validator: (value) => value == null ? 'Select a Category' : null,
               ),
+              SizedBox(height: 7,),
               TextFormField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: InputDecoration(labelText: 'Description',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)
+
+                    )),
                 maxLines: 3,
               ),
               SizedBox(height: 20),
