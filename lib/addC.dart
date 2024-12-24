@@ -16,14 +16,15 @@ class AddCategoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Category')),
+      appBar: AppBar(title: Text('Add Shivam')),
+      
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: categoryController,
-              decoration: InputDecoration(labelText: 'Category Name'),
+              decoration: InputDecoration(labelText: 'Category  '),
             ),
             SizedBox(height: 20),
             ElevatedButton(
