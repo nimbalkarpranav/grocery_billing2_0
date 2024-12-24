@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/Home_screen/productlist.dart';
 import '../DataBase/database.dart';
 import '../addproduct.dart';
+  // Import the Product List page if you have one
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,39 +10,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> products = [];
-
-  Future<void> fetchProducts() async {
-    final data = await DBHelper.instance.fetchProducts();
-    setState(() {
-      products = data;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProducts();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Products', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        leading: IconButton(
-          icon: Icon(Icons.add, color: Colors.white),
-          onPressed: () {
-            // Navigate to AddProductPage when the icon is tapped
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddProductPage()),
-            ).then((_) {
-              // After returning from AddProductPage, fetch the latest products
-              fetchProducts();
-            });
-          },
-        ),
+        title: Text('Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
         elevation: 4,
       ),
@@ -56,69 +31,84 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ListTile(
+              leading: Icon(Icons.list, color: Colors.blueAccent),
+              title: Text('Product List', style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProductListPage()), // Navigate to Product List page
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.add, color: Colors.blueAccent),
               title: Text('Add Product', style: TextStyle(fontSize: 18)),
-              onTap: () async {
+              onTap: () {
                 Navigator.pop(context); // Close the drawer
-                await Navigator.push(
+                Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AddProductPage()),
+                  MaterialPageRoute(builder: (context) => AddProductPage()), // Navigate to Add Product page
                 );
-                fetchProducts(); // Refresh the product list after adding a new product
               },
             ),
           ],
         ),
       ),
-      body: SafeArea(
-        child: products.isEmpty
-            ? Center(
-          child: Text(
-            'No Products Found',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
-          ),
-        )
-            : ListView.builder(
-          itemCount: products.length,
-          itemBuilder: (context, index) {
-            final product = products[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(16),
-                  title: Text(
-                    product['name'],
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Price: \$${product['price']}',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                      Text(
-                        'Sell Price: \$${product['sellPrice']}',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                      Text(
-                        'Category: ${product['category']}',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                    ],
-                  ),
-                  tileColor: Colors.white,
-                ),
-              ),
-            );
-          },
-        ),
+      body: const Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Text('Welcome \nto the\nDashboard', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),),
       ),
+      // SafeArea(
+      //   child: Padding(
+      //     padding: const EdgeInsets.all(16.0),
+      //     child: Column(
+      //       mainAxisAlignment: MainAxisAlignment.center,
+      //       crossAxisAlignment: CrossAxisAlignment.center,
+      //       children: [
+      //         // Title
+      //         Text(
+      //           'Welcome to the Dashboard',
+      //           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+      //         ),
+      //         SizedBox(height: 40),
+      //
+      //         // Buttons
+      //         ElevatedButton(
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: Colors.blueAccent, // Button color
+      //             padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0), // Button padding
+      //             textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      //           ),
+      //           onPressed: () {
+      //             // Navigate to the Product List page
+      //             Navigator.push(
+      //               context,
+      //               MaterialPageRoute(builder: (context) => ProductListPage()),
+      //             );
+      //           },
+      //           child: Text('View Product List'),
+      //         ),
+      //         SizedBox(height: 20),
+      //         ElevatedButton(
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: Colors.green, // Button color
+      //             padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0), // Button padding
+      //             textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      //           ),
+      //           onPressed: () {
+      //             // Navigate to Add Product page
+      //             Navigator.push(
+      //               context,
+      //               MaterialPageRoute(builder: (context) => AddProductPage()),
+      //             );
+      //           },
+      //           child: Text('Add New Product'),
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // ),
     );
   }
 }
