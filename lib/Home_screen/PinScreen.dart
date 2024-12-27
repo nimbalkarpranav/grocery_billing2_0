@@ -30,7 +30,7 @@ class _PinscreenState extends State<Pinscreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.green, Colors.blue], // Changed to green and blue
+            colors: [Colors.blueAccent, Colors.blue], // Changed to green and blue
           ),
         ),
         child: Padding(
@@ -65,12 +65,12 @@ class _PinscreenState extends State<Pinscreen> {
                   PinEnter();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Changed button color to blue
+                  backgroundColor: Colors.blueAccent, // Changed button color to blue
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  shadowColor: Colors.blue.shade700, // Changed shadow to blue
+                  shadowColor: Colors.blueAccent.shade700, // Changed shadow to blue
                   elevation: 8,
                 ),
                 child: Text(

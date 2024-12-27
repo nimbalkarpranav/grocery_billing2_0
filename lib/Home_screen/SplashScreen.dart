@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green, Colors.blue], // Changed colors to green and blue
+            colors: [Colors.blueAccent, Colors.blue], // Changed colors to green and blue
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue, // Adjusted shadow color to blue
+                  color: Colors.blueAccent, // Adjusted shadow color to blue
                   blurRadius: 15,
                   offset: Offset(0, 10),
                 ),
