@@ -44,6 +44,12 @@ class DBHelper {
         name TEXT NOT NULL
       )
     ''');
+    await db.execute('''
+      CREATE TABLE castamur (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+      )
+    ''');
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -66,6 +72,16 @@ class DBHelper {
     final db = await instance.database;
     return await db.query('categories');
   }
+
+  Future<int>insertCastamur(Map<String,dynamic>castamur)async{
+    final db=await instance.database;
+    return await db.insert('castamur', castamur);
+  }
+  Future<int>fetchCastamur(Map<String,double>castamur)async{
+    final db=await instance.database;
+    return await db.insert('castamur', castamur);
+  }
+
 
   Future<int> insertProduct(Map<String, dynamic> product) async {
     final db = await instance.database;

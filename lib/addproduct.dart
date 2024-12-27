@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/Home_screen/productlist.dart';
 import 'DataBase/database.dart';
 import 'addC.dart';
 
@@ -39,6 +40,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
       await DBHelper.instance.insertProduct(product);
       Navigator.pop(context);
+
     }
   }
 
@@ -53,18 +55,24 @@ class _AddProductPageState extends State<AddProductPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Product'),
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.add),
+        //     onPressed: () async {
+        //       // Navigate to AddCategoryPage
+        //       await Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (context) => AddCategoryPage()),
+        //       );
+        //       fetchCategories(); // Refresh categories after adding a new one
+        //     },
+        //   )
+        // ],
         actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () async {
-              // Navigate to AddCategoryPage
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddCategoryPage()),
-              );
-              fetchCategories(); // Refresh categories after adding a new one
-            },
-          )
+          TextButton(
+            onPressed: () => saveProduct(context),
+            child: Text('Save'),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -122,11 +130,28 @@ class _AddProductPageState extends State<AddProductPage> {
                   });
                 },
                 decoration: InputDecoration(labelText: 'Category',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)
 
-                    )),
+                    border: OutlineInputBorder(
+
+                        borderRadius: BorderRadius.circular(10),
+
+
+
+                    ),
+
+                ),
                 validator: (value) => value == null ? 'Select a Category' : null,
+                icon:   IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () async {
+                    // Navigate to AddCategoryPage
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddCategoryPage()),
+                    );
+                    fetchCategories(); // Refresh categories after adding a new one
+                  },
+                ),
               ),
               SizedBox(height: 7,),
               TextFormField(
@@ -139,10 +164,7 @@ class _AddProductPageState extends State<AddProductPage> {
                 maxLines: 3,
               ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => saveProduct(context),
-                child: Text('Save Product'),
-              ),
+
             ],
           ),
         ),

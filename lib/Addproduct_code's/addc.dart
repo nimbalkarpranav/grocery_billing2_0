@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
-import 'DataBase/database.dart';
+
+import '../DataBase/database.dart';
 
 
-class AddCategoryPage extends StatelessWidget {
+void main(){
+  runApp(Addcustomer());
+}
+class Addcustomer extends StatelessWidget {
   final TextEditingController categoryController = TextEditingController();
 
-  void saveCategory(BuildContext context) async {
+  void saveCastamur(BuildContext context) async {
     if (categoryController.text.isNotEmpty) {
-      final category = {'name': categoryController.text};
-      await DBHelper.instance.insertCategory(category);
+      final castamur = {'name': categoryController.text};
+      await DBHelper.instance.insertCastamur(castamur);
       Navigator.pop(context );
+    }
+    else{
+      print("NOT ADD castamur");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+     MaterialApp(
+    home:
+      Scaffold(
       appBar: AppBar(title: Text(' Add  Category')),
-      
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -28,12 +38,13 @@ class AddCategoryPage extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => saveCategory(context),
+              onPressed: () => saveCastamur(context),
               child: Text('Save Category'),
             ),
           ],
         ),
       ),
+      )
     );
   }
 }

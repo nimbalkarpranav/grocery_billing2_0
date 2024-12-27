@@ -1,38 +1,107 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/Home_screen/home_screen.dart';
 
-class Pinscreen extends StatefulWidget {
-  const Pinscreen({super.key});
+class PinScreen extends StatefulWidget {
+  const PinScreen({super.key});
 
   @override
-  State<Pinscreen> createState() => _PinscreenState();
+  State<PinScreen> createState() => _PinScreenState();
 }
 
-class _PinscreenState extends State<Pinscreen> {
-  TextEditingController PinController = TextEditingController();
-  get pinController => PinController.text.toString();
+class _PinScreenState extends State<PinScreen> {
+  TextEditingController pinController = TextEditingController();
+  final String pin = "1234";
 
-  String pin = "1234";
-
-  void PinEnter() {
-    if (pinController == pin) {
+  void validatePin() {
+    if (pinController.text == pin) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } else {
-      // You can show an alert or a message if the PIN is incorrect
-      print("Incorrect PIN");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Invalid PIN"),
+          content: Text("The PIN you entered is incorrect."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("OK"),
+            ),
+          ],
+        ),
+      );
     }
   }
 
-  void handleButtonPress(String value) {
-    setState(() {
-      if (value == 'Erase') {
-        if (PinController.text.isNotEmpty) {
-          PinController.text = PinController.text.substring(0, PinController.text.length - 1);
-        }
-      } else if (value == 'Done') {
-        PinEnter();
-      } else {
-        PinController.text += value;
-      }
-    });
+  Widget buildKeyboardButton(String value) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (value == "⌫") {
+            if (pinController.text.isNotEmpty) {
+              pinController.text = pinController.text
+                  .substring(0, pinController.text.length - 1);
+            }
+          } else if (pinController.text.length < 4) {
+            pinController.text += value;
+          }
+        },
+        child: Container(
+          margin: EdgeInsets.all(4.0),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          height: 60,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildKeyboard() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            buildKeyboardButton("1"),
+            buildKeyboardButton("2"),
+            buildKeyboardButton("3"),
+          ],
+        ),
+        Row(
+          children: [
+            buildKeyboardButton("4"),
+            buildKeyboardButton("5"),
+            buildKeyboardButton("6"),
+          ],
+        ),
+        Row(
+          children: [
+            buildKeyboardButton("7"),
+            buildKeyboardButton("8"),
+            buildKeyboardButton("9"),
+          ],
+        ),
+        Row(
+          children: [
+            Spacer(),
+            buildKeyboardButton("0"),
+            buildKeyboardButton("⌫"),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -43,80 +112,87 @@ class _PinscreenState extends State<Pinscreen> {
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blueAccent, Colors.blue],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF00C9FF),
+              Color(0xFF92FE9D),
+            ],
           ),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Display the current pin
-              TextField(
-                controller: PinController,
-                keyboardType: TextInputType.none, // Disable the system keyboard
-                decoration: InputDecoration(
-                  hintText: 'Enter Pin',
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.white.withBlue(3),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
+              Column(
+                children: [
+                  Text(
+                    "Enter Your PIN",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: TextStyle(color: Colors.white, fontSize: 18),
-                readOnly: true, // Make it read-only as the custom keyboard will be used
-              ),
-              SizedBox(height: 20),
-
-              // Custom keyboard layout
-              GridView.builder(
-                shrinkWrap: true,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: 12,
-                itemBuilder: (context, index) {
-                  String buttonText;
-
-                  if (index < 9) {
-                    buttonText = (index + 1).toString(); // Buttons 1 to 9
-                  } else if (index == 9) {
-                    buttonText = '0'; // Button 0
-                  } else if (index == 10) {
-                    buttonText = 'Done'; // Done button
-                  } else {
-                    buttonText = 'Erase'; // Erase button
-                  }
-
-                  return ElevatedButton(
-                    onPressed: () => handleButtonPress(buttonText),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent.shade700,
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), // Reduced padding
-                      shape: RoundedRectangleBorder(
+                  SizedBox(height: 30),
+                  TextField(
+                    controller: pinController,
+                    keyboardType: TextInputType.none,
+                    obscureText: true,
+                    maxLength: 4,
+                    decoration: InputDecoration(
+                      hintText: '••••',
+                      hintStyle: TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.2),
+                      counterText: "",
+                      contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
                       ),
-                      shadowColor: Colors.blue.shade700,
-                      elevation: 8,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
                     ),
-                    child: Text(
-                      buttonText,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // Adjusted font size
-                    ),
-                  );
-                },
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    textAlign: TextAlign.center,
+                    readOnly: true,
+                  ),
+                ],
+              ),
+              buildKeyboard(),
+              ElevatedButton(
+                onPressed: validatePin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade400,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 10,
+                ),
+                child: Text(
+                  "Enter",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Text(
+                  "Secure PIN Authentication",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               ),
             ],
           ),
