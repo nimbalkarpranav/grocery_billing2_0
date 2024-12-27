@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/Home_screen/home_screen.dart';
 
 class Pinscreen extends StatefulWidget {
   const Pinscreen({super.key});
@@ -16,8 +15,24 @@ class _PinscreenState extends State<Pinscreen> {
 
   void PinEnter() {
     if (pinController == pin) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+    } else {
+      // You can show an alert or a message if the PIN is incorrect
+      print("Incorrect PIN");
     }
+  }
+
+  void handleButtonPress(String value) {
+    setState(() {
+      if (value == 'Erase') {
+        if (PinController.text.isNotEmpty) {
+          PinController.text = PinController.text.substring(0, PinController.text.length - 1);
+        }
+      } else if (value == 'Done') {
+        PinEnter();
+      } else {
+        PinController.text += value;
+      }
+    });
   }
 
   @override
@@ -30,7 +45,7 @@ class _PinscreenState extends State<Pinscreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.blueAccent, Colors.blue], // Changed to green and blue
+            colors: [Colors.blueAccent, Colors.blue],
           ),
         ),
         child: Padding(
@@ -39,44 +54,69 @@ class _PinscreenState extends State<Pinscreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Display the current pin
               TextField(
                 controller: PinController,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.none, // Disable the system keyboard
                 decoration: InputDecoration(
                   hintText: 'Enter Pin',
-                  hintStyle: TextStyle(color: Colors.white70),
+                  hintStyle: const TextStyle(color: Colors.white70),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.2),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  fillColor: Colors.white.withBlue(3),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: const BorderSide(color: Colors.white),
                   ),
                 ),
                 style: TextStyle(color: Colors.white, fontSize: 18),
+                readOnly: true, // Make it read-only as the custom keyboard will be used
               ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  PinEnter();
+
+              // Custom keyboard layout
+              GridView.builder(
+                shrinkWrap: true,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: 12,
+                itemBuilder: (context, index) {
+                  String buttonText;
+
+                  if (index < 9) {
+                    buttonText = (index + 1).toString(); // Buttons 1 to 9
+                  } else if (index == 9) {
+                    buttonText = '0'; // Button 0
+                  } else if (index == 10) {
+                    buttonText = 'Done'; // Done button
+                  } else {
+                    buttonText = 'Erase'; // Erase button
+                  }
+
+                  return ElevatedButton(
+                    onPressed: () => handleButtonPress(buttonText),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent.shade700,
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), // Reduced padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      shadowColor: Colors.blue.shade700,
+                      elevation: 8,
+                    ),
+                    child: Text(
+                      buttonText,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // Adjusted font size
+                    ),
+                  );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent, // Changed button color to blue
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  shadowColor: Colors.blueAccent.shade700, // Changed shadow to blue
-                  elevation: 8,
-                ),
-                child: Text(
-                  "Enter",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
               ),
             ],
           ),
