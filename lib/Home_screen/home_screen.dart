@@ -68,9 +68,11 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(10.0),
-        child: Text('Welcome \nto the\nDashboard', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),),
+      body: Center(
+        child: const Padding(
+          padding: EdgeInsets.all(10.0),
+          child: Text('Welcome \n   to the\nDashboard', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),),
+        ),
       ),
       // SafeArea(
       //   child: Padding(

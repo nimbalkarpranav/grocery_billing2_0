@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'DataBase/database.dart';
 
-
 class AddCategoryPage extends StatelessWidget {
   final TextEditingController categoryController = TextEditingController();
 
@@ -17,7 +16,6 @@ class AddCategoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(' Add  Category')),
-      
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
