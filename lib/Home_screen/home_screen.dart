@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/productlist.dart';
 import 'package:grocery_billing2_0/profile.dart';
+import '../DataBase/database.dart';
 import '../addproduct.dart';
-import 'EditPinDB/editpin.dart';
+import '../business.dart';
   // Import the Product List page if you have one
 
 class HomePage extends StatefulWidget {
@@ -12,53 +13,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  void editPin() async {
-    TextEditingController newPinController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Edit PIN"),
-        content: TextField(
-          controller: newPinController,
-          obscureText: true,
-          decoration: InputDecoration(hintText: 'Enter new PIN'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (newPinController.text.length == 4) {
-                DatabaseHelper().updatePin(newPinController.text);
-                setState(() {
-                  var pin = newPinController.text; // Update local PIN
-                });
-                Navigator.pop(context);
-              } else {
-                // Show error if PIN is not 4 digits
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text("Invalid PIN"),
-                    content: Text("The PIN must be 4 digits long."),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text("OK"),
-                      ),
-                    ],
-                  ),
-                );
-              }
-            },
-            child: Text("Save"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
-        ],
-      ),
-    );
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +44,17 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.person, color: Colors.blueAccent),
+              title: Text('Business ', style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Business()), // Navigate to Product List page
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.list, color: Colors.blueAccent),
               title: Text('Product List', style: TextStyle(fontSize: 18)),
               onTap: () {
@@ -110,13 +75,6 @@ class _HomePageState extends State<HomePage> {
                   context,
                   MaterialPageRoute(builder: (context) => AddProductPage()), // Navigate to Add Product page
                 );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.pin_outlined, color: Colors.blueAccent),
-              title: Text('Edit Pin ', style: TextStyle(fontSize: 18)),
-              onTap: () {
-                editPin();
               },
             ),
           ],
