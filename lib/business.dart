@@ -1,10 +1,8 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:grocery_billing2_0/business_edit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Business extends StatefulWidget {
   const Business({super.key});
@@ -14,95 +12,96 @@ class Business extends StatefulWidget {
 }
 
 class _BusinessState extends State<Business> {
+  String? _imagePath;
+  String? _name;
+  String? _email;
+  String? _phone;
+  String? _address;
+  String? _description;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    // Image.file(File(_imagePath!));
-
+    _loadBusinessData();
   }
-  String? _imagePath;
-  Future<void> _pickImage() async {
-    print("get1");
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      final directory = await getApplicationDocumentsDirectory();
-      final String newPath = '${directory.path}/${pickedFile.name}';
-      final File file = File(pickedFile.path);
-
-      await file.copy(newPath);
-
-      setState(() {
-        _imagePath = newPath;
-      });
-    }
+  Future<void> _loadBusinessData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _imagePath = prefs.getString('business_image');
+      _name = prefs.getString('business_name') ?? "N/A";
+      _email = prefs.getString('business_email') ?? "N/A";
+      _phone = prefs.getString('business_phone') ?? "N/A";
+      _address = prefs.getString('business_address') ?? "N/A";
+      _description = prefs.getString('business_description') ?? "N/A";
+    });
   }
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController bName = TextEditingController();
     return Scaffold(
       appBar: AppBar(
-        title:Text("Business Profile "),
+        title: const Text("Business Profile"),
         centerTitle: true,
         actions: <Widget>[
           IconButton(onPressed: (){
-
-
-
+            Navigator.push(context, MaterialPageRoute(builder: (context) => BusinessEdit(),));
           }, icon: Icon(Icons.edit))
         ],
       ),
-      body: Container(
-        child: Column(
-          children: [
-            Text("Business Image ",style: TextStyle(fontSize:21,color: Colors.black,fontWeight:FontWeight.bold),),
-            Row(mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                Container(
-                  height: 140,
-                  width: 300,
-                  color: Colors.black,
-                  child:_imagePath == null ? Padding(
-                    padding: const EdgeInsets.all(33.0),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.blueAccent,
-                      maxRadius: 33,
-
-                      child: IconButton(onPressed:(){
-                        _pickImage();
-                        print("pressed");
-                      }, icon: Icon(CupertinoIcons.camera,size: 44,color: Colors.white,)),
-                    ),
-                  ): Image.file(File(_imagePath!)),
-
-                ),
-
-              ],
-            ),
-            SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: TextField(
-                controller: bName,
-
-                decoration: InputDecoration(
-                  hintText: "Name ...",
-                    labelText: "Name",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(7),
-
-                    )
-                ),
-
+      body: Padding(
+        padding: const EdgeInsets.all(18.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Text(
+                "Business Information",
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
               ),
-            )
-          ],
+              const SizedBox(height: 20),
+              _imagePath != null
+                  ? Image.file(
+                File(_imagePath!),
+                height: 150,
+                width: 150,
+                fit: BoxFit.cover,
+              )
+                  : const Icon(
+                Icons.business,
+                size: 150,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 20),
+              _buildInfoRow("Name", _name),
+              _buildInfoRow("Email", _email),
+              _buildInfoRow("Phone", _phone),
+              _buildInfoRow("Address", _address),
+              _buildInfoRow("Description", _description),
+            ],
+          ),
         ),
       ),
+    );
+  }
 
+  Widget _buildInfoRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          Expanded(
+            child: Text(
+              value ?? "N/A",
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
