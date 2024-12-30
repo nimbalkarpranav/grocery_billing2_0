@@ -33,6 +33,8 @@ dependencies:
   path_provider: ^2.1.5
   crypto: ^3.0.6
   sqflite: ^2.4.1
+  file_picker: ^8.1.7
+  image_picker: ^1.1.2
   shared_preferences: ^2.3.4
 
 
