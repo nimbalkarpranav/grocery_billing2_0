@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/home_screen.dart';
 
+import 'EditPinDB/editpin.dart';
+
 class PinScreen extends StatefulWidget {
   const PinScreen({super.key});
 
@@ -10,7 +12,22 @@ class PinScreen extends StatefulWidget {
 
 class _PinScreenState extends State<PinScreen> {
   TextEditingController pinController = TextEditingController();
-  final String pin = "1234";
+  String pin = "1234"; // Default PIN, can be fetched from DB
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPin(); // Load PIN from DB
+  }
+
+  Future<void> _loadPin() async {
+    String? savedPin = await DatabaseHelper().getPin();
+    if (savedPin != null) {
+      setState(() {
+        pin = savedPin;
+      });
+    }
+  }
 
   void validatePin() {
     if (pinController.text == pin) {
@@ -34,6 +51,8 @@ class _PinScreenState extends State<PinScreen> {
       );
     }
   }
+
+
 
   Widget buildKeyboardButton(String value) {
     return Expanded(
@@ -115,8 +134,8 @@ class _PinScreenState extends State<PinScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF00C9FF),
-              Color(0xFF92FE9D),
+              Colors.blueAccent,
+              Colors.blue,
             ],
           ),
         ),
@@ -142,7 +161,7 @@ class _PinScreenState extends State<PinScreen> {
                     obscureText: true,
                     maxLength: 4,
                     decoration: InputDecoration(
-                      hintText: '••••',
+                      hintText: '----',
                       hintStyle: TextStyle(color: Colors.white70),
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.2),
@@ -168,7 +187,7 @@ class _PinScreenState extends State<PinScreen> {
               ElevatedButton(
                 onPressed: validatePin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade400,
+                  backgroundColor: Colors.blueAccent.shade400,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -184,6 +203,7 @@ class _PinScreenState extends State<PinScreen> {
                   ),
                 ),
               ),
+
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Text(
