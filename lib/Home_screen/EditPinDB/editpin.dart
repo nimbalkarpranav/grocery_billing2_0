@@ -39,7 +39,6 @@ class DatabaseHelper {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-
   Future<String?> getPin() async {
     final db = await database;
     List<Map> result = await db.query('pin');
