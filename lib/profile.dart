@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -10,8 +11,27 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   String userName = "Person Name"; // Default name
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName(); // Load saved username when the widget initializes
+  }
+
+  Future<void> _loadUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? "Person Name";
+    });
+  }
+
+  Future<void> _saveUserName(String name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userName', name);
+  }
+
   void _editName() {
-    TextEditingController nameController = TextEditingController(text: userName);
+    TextEditingController nameController =
+        TextEditingController(text: userName);
 
     showDialog(
       context: context,
@@ -34,12 +54,14 @@ class _ProfileState extends State<Profile> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                userName = nameController.text.trim().isEmpty
-                    ? userName
-                    : nameController.text.trim();
-              });
+            onPressed: () async {
+              String newName = nameController.text.trim();
+              if (newName.isNotEmpty) {
+                setState(() {
+                  userName = newName;
+                });
+                await _saveUserName(newName); // Save the updated username
+              }
               Navigator.pop(context);
             },
             child: const Text("Save"),
@@ -68,14 +90,14 @@ class _ProfileState extends State<Profile> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile Picture
               const CircleAvatar(
-                radius: 60,
-                backgroundImage: AssetImage('images/propic.jpeg'),
+                backgroundColor: Colors.deepOrange,
+                maxRadius: 30,
+                backgroundImage: AssetImage(
+                  'assetsimage/propic.jpeg',
+                ),
               ),
               const SizedBox(height: 20),
-
-              // Name
               Text(
                 userName,
                 style: const TextStyle(
@@ -84,8 +106,6 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Bio
               const Text(
                 "Information About User",
                 textAlign: TextAlign.center,
@@ -95,8 +115,6 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
               const SizedBox(height: 30),
-
-              // Information Fields
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
@@ -111,16 +129,28 @@ class _ProfileState extends State<Profile> {
                     ),
                   ],
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    ProfileField(icon: Icons.email, label: "Email", value: "johndoe@example.com"),
+                  children: [
+                    ProfileField(
+                        icon: Icons.email,
+                        label: "Email",
+                        value: "username584@gmail.com"),
                     Divider(),
-                    ProfileField(icon: Icons.phone, label: "Phone", value: "+1 234 567 890"),
+                    ProfileField(
+                        icon: Icons.phone,
+                        label: "Phone",
+                        value: "+1 234 567 890"),
                     Divider(),
-                    ProfileField(icon: Icons.location_on, label: "Address", value: "123 Main Street, Cityville"),
+                    ProfileField(
+                        icon: Icons.location_on,
+                        label: "Address",
+                        value: "123 Main Street, Cityville"),
                     Divider(),
-                    ProfileField(icon: Icons.calendar_today, label: "Date of Birth", value: "January 1, 1990"),
+                    ProfileField(
+                        icon: Icons.calendar_today,
+                        label: "Date of Birth",
+                        value: "January 1, 1990"),
                   ],
                 ),
               ),
