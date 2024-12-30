@@ -44,7 +44,7 @@ class _PinScreenState extends State<PinScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
+              child: Text("ok"),
             ),
           ],
         ),

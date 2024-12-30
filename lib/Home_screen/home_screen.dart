@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
             ),
             ListTile(
               leading: Icon(Icons.pin_outlined, color: Colors.blueAccent),
-              title: Text('Edit Pin ', style: TextStyle(fontSize: 18)),
+              title: Text('Pin Edit', style: TextStyle(fontSize: 18)),
               onTap: () {
                 editPin();
               },
