@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/productlist.dart';
 import 'package:grocery_billing2_0/profile.dart';
-import '../DataBase/database.dart';
 import '../addproduct.dart';
 import '../business.dart';
-  // Import the Product List page if you have one
+import 'EditPinDB/editpin.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -12,6 +11,44 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+
+
+  TextEditingController pinController = TextEditingController();
+
+  void editPin() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Edit PIN"),
+        content: TextField(
+          keyboardType: TextInputType.number,
+          controller: pinController,
+          obscureText: true,
+          maxLength: 4,
+          decoration: InputDecoration(hintText: "New PIN"),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              final newPin = pinController.text;
+              if (newPin.isNotEmpty && newPin.length == 4) {
+                DatabaseHelper.instance.updatePin(newPin);
+                Navigator.pop(context);
+              } else {
+                // Show error message if PIN is invalid
+              }
+            },
+            child: Text("Save"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +114,12 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
+
+            ListTile(
+              leading: Icon(Icons.add, color: Colors.blueAccent),
+              title: Text('Edit Pin', style: TextStyle(fontSize: 18)),
+              onTap:  editPin,
+            ),
           ],
         ),
       ),
@@ -86,56 +129,6 @@ class _HomePageState extends State<HomePage> {
           child: Text('Welcome \n   to the\nDashboard', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),),
         ),
       ),
-      // SafeArea(
-      //   child: Padding(
-      //     padding: const EdgeInsets.all(16.0),
-      //     child: Column(
-      //       mainAxisAlignment: MainAxisAlignment.center,
-      //       crossAxisAlignment: CrossAxisAlignment.center,
-      //       children: [
-      //         // Title
-      //         Text(
-      //           'Welcome to the Dashboard',
-      //           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),
-      //         ),
-      //         SizedBox(height: 40),
-      //
-      //         // Buttons
-      //         ElevatedButton(
-      //           style: ElevatedButton.styleFrom(
-      //             backgroundColor: Colors.blueAccent, // Button color
-      //             padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0), // Button padding
-      //             textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      //           ),
-      //           onPressed: () {
-      //             // Navigate to the Product List page
-      //             Navigator.push(
-      //               context,
-      //               MaterialPageRoute(builder: (context) => ProductListPage()),
-      //             );
-      //           },
-      //           child: Text('View Product List'),
-      //         ),
-      //         SizedBox(height: 20),
-      //         ElevatedButton(
-      //           style: ElevatedButton.styleFrom(
-      //             backgroundColor: Colors.green, // Button color
-      //             padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0), // Button padding
-      //             textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      //           ),
-      //           onPressed: () {
-      //             // Navigate to Add Product page
-      //             Navigator.push(
-      //               context,
-      //               MaterialPageRoute(builder: (context) => AddProductPage()),
-      //             );
-      //           },
-      //           child: Text('Add New Product'),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // ),
     );
   }
 }

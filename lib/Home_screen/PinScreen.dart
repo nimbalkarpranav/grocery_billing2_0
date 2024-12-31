@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/Home_screen/home_screen.dart';
 
 import 'EditPinDB/editpin.dart';
+import 'home_screen.dart';
 
 class PinScreen extends StatefulWidget {
   const PinScreen({super.key});
@@ -12,21 +12,18 @@ class PinScreen extends StatefulWidget {
 
 class _PinScreenState extends State<PinScreen> {
   TextEditingController pinController = TextEditingController();
-  String pin = "1234"; // Default PIN, can be fetched from DB
+  String? pin;
 
   @override
   void initState() {
     super.initState();
-    _loadPin(); // Load PIN from DB
+    _loadPin();
   }
 
   Future<void> _loadPin() async {
-    String? savedPin = await DatabaseHelper().getPin();
-    if (savedPin != null) {
-      setState(() {
-        pin = savedPin;
-      });
-    }
+    pin = await DatabaseHelper.instance.getPin() ?? '1234'; // Default PIN if not set
+    pinController.text = pin!;
+    setState(() {});
   }
 
   void validatePin() {
@@ -51,8 +48,6 @@ class _PinScreenState extends State<PinScreen> {
       );
     }
   }
-
-
 
   Widget buildKeyboardButton(String value) {
     return Expanded(
@@ -166,8 +161,7 @@ class _PinScreenState extends State<PinScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.2),
                       counterText: "",
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
@@ -203,7 +197,6 @@ class _PinScreenState extends State<PinScreen> {
                   ),
                 ),
               ),
-
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Text(
