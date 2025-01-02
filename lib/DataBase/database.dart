@@ -50,6 +50,19 @@ class DBHelper {
         name TEXT NOT NULL
       )
     ''');
+    await db.execute('''
+      CREATE TABLE business (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        img TEXT,
+        name TEXT NOT NULL,
+        email TEXT,
+        phone TEXT,
+        address TEXT,
+        discription TEXT,
+
+        
+      )
+    ''');
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -92,4 +105,8 @@ class DBHelper {
     final db = await instance.database;
     return await db.query('products');
   }
+  // Future <int>_Insertbusiness ()async{
+  //
+  //
+  // }
 }

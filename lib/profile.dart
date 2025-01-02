@@ -9,66 +9,68 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  String userName = "Person Name"; // Default name
+  String userName = "Person Name";
+  String email = "example@email.com";
+  String phone = "1234567890";
+  String address = "Default Address";
+
+  // Controllers for editing
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+
+  bool isEdit = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserName(); // Load saved username when the widget initializes
+    _loadUserData();
   }
 
-  Future<void> _loadUserName() async {
+  Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       userName = prefs.getString('userName') ?? "Person Name";
+      email = prefs.getString('email') ?? "example@email.com";
+      phone = prefs.getString('phone') ?? "1234567890";
+      address = prefs.getString('address') ?? "Default Address";
     });
   }
 
-  Future<void> _saveUserName(String name) async {
+  Future<void> _saveUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userName', name);
+    await prefs.setString('userName', userName);
+    await prefs.setString('email', email);
+    await prefs.setString('phone', phone);
+    await prefs.setString('address', address);
   }
 
-  void _editName() {
-    TextEditingController nameController =
-        TextEditingController(text: userName);
+  void _enableEdit() {
+    setState(() {
+      isEdit = true;
+      _nameController.text = userName;
+      _emailController.text = email;
+      _phoneController.text = phone;
+      _addressController.text = address;
+    });
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Edit Name"),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: "Name",
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              String newName = nameController.text.trim();
-              if (newName.isNotEmpty) {
-                setState(() {
-                  userName = newName;
-                });
-                await _saveUserName(newName); // Save the updated username
-              }
-              Navigator.pop(context);
-            },
-            child: const Text("Save"),
-          ),
-        ],
-      ),
-    );
+  void _saveChanges() {
+    setState(() {
+      userName = _nameController.text.trim();
+      email = _emailController.text.trim();
+      phone = _phoneController.text.trim();
+      address = _addressController.text.trim();
+      isEdit = false;
+    });
+    _saveUserData();
+  }
+
+  void _discardChanges() {
+    setState(() {
+      isEdit = false;
+    });
   }
 
   @override
@@ -77,9 +79,20 @@ class _ProfileState extends State<Profile> {
       appBar: AppBar(
         title: const Text("Profile Page"),
         centerTitle: true,
-        actions: [
+        actions: isEdit
+            ? [
           IconButton(
-            onPressed: _editName,
+            onPressed: _saveChanges,
+            icon: const Icon(Icons.save),
+          ),
+          IconButton(
+            onPressed: _discardChanges,
+            icon: const Icon(Icons.cancel),
+          ),
+        ]
+            : [
+          IconButton(
+            onPressed: _enableEdit,
             icon: const Icon(Icons.edit),
           ),
         ],
@@ -91,68 +104,37 @@ class _ProfileState extends State<Profile> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const CircleAvatar(
-                backgroundColor: Colors.deepOrange,
+                backgroundColor: Colors.blueAccent,
                 maxRadius: 30,
-                backgroundImage: AssetImage(
-                  'assetsimage/propic.jpeg',
-                ),
+                backgroundImage: AssetImage('assetsimage/propic.jpeg'),
               ),
               const SizedBox(height: 20),
-              Text(
+              _buildTextField(
+                "Name",
                 userName,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                _nameController,
+                isEnabled: isEdit,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                "Information About User",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+              _buildTextField(
+                "Email",
+                email,
+                _emailController,
+                keyboardType: TextInputType.emailAddress,
+                isEnabled: isEdit,
               ),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ProfileField(
-                        icon: Icons.email,
-                        label: "Email",
-                        value: "username584@gmail.com"),
-                    Divider(),
-                    ProfileField(
-                        icon: Icons.phone,
-                        label: "Phone",
-                        value: "+1 234 567 890"),
-                    Divider(),
-                    ProfileField(
-                        icon: Icons.location_on,
-                        label: "Address",
-                        value: "123 Main Street, Cityville"),
-                    Divider(),
-                    ProfileField(
-                        icon: Icons.calendar_today,
-                        label: "Date of Birth",
-                        value: "January 1, 1990"),
-                  ],
-                ),
+              _buildTextField(
+                "Phone",
+                phone,
+                _phoneController,
+                keyboardType: TextInputType.phone,
+                isEnabled: isEdit,
+              ),
+              _buildTextField(
+                "Address",
+                address,
+                _addressController,
+                maxLines: 2,
+                isEnabled: isEdit,
               ),
             ],
           ),
@@ -160,46 +142,41 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
-}
 
-class ProfileField extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const ProfileField({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: Colors.blue,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            "$label:",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+  Widget _buildTextField(String label, String value, TextEditingController controller,
+      {TextInputType keyboardType = TextInputType.text,
+        int maxLines = 1,
+        required bool isEnabled}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        enabled: isEnabled,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color:Colors.black87 ,fontWeight: FontWeight.bold),
+          hintText: value,
+          hintStyle: const TextStyle(color: Colors.blue),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(7),
           ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(7),
+            borderSide: const BorderSide(color: Colors.grey),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(7),
+            borderSide: const BorderSide(color: Colors.blue),
+          ),
+          filled: true,
+          fillColor: isEnabled ? Colors.blue.shade100 : Colors.blue.shade50,
         ),
-      ],
+        style: TextStyle(
+          color: isEnabled ? Colors.black : Colors.grey.shade700,
+        ),
+      ),
     );
   }
 }

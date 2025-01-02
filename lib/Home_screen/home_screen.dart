@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/productlist.dart';
 import 'package:grocery_billing2_0/profile.dart';
 import '../addproduct.dart';
-import '../business.dart';
+import '../Business/business.dart';
 import 'EditPinDB/editpin.dart';
 
 class HomePage extends StatefulWidget {
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Business()), // Navigate to Product List page
+                  MaterialPageRoute(builder: (context) => BusinessEdit()), // Navigate to Product List page
                 );
               },
             ),
