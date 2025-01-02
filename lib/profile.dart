@@ -28,8 +28,8 @@ class _ProfileState extends State<Profile> {
   bool isEdit = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadUserData();
   }
 
@@ -37,6 +37,7 @@ class _ProfileState extends State<Profile> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userName', userName);
+      print(userName);
       await prefs.setString('email', email);
       await prefs.setString('phone', phone);
       await prefs.setString('address', address);
