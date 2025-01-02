@@ -94,6 +94,15 @@ class DBHelper {
     );
   }
 
+  Future<int> deleteProduct(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'customers',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // Insert Customer
   Future<int> insertCustomer(Map<String, dynamic> customer) async {
     final db = await instance.database;

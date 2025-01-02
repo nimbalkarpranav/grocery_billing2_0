@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Billing_page/product_billing.dart';
 import 'package:grocery_billing2_0/drawer/drawer.dart';
 import '../DataBase/database.dart';
+import '../Payment Details Page/PaymentDetailsADD.dart';
 import '../addproduct.dart';
 import '../profile.dart';
 import 'editeProduct.dart';
@@ -73,23 +74,17 @@ class _ProductListPageState extends State<ProductListPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: () {
-              // Navigate to BillingPage only if there are products in the cart
-              if (cart.isNotEmpty) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>AddProductPage(),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(''),
-                  duration: Duration(seconds: 2),
-                ));
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddProductPage()),
+              );
+              if (result == true) {
+                fetchProducts(); // Refresh products
               }
             },
           ),
+
         ],
       ),
       body: products.isEmpty

@@ -3,7 +3,6 @@ import 'package:grocery_billing2_0/Home_screen/productlist.dart';
 import 'DataBase/database.dart';
 import 'addC.dart';
 
-
 class AddProductPage extends StatefulWidget {
   @override
   _AddProductPageState createState() => _AddProductPageState();
@@ -29,18 +28,17 @@ class _AddProductPageState extends State<AddProductPage> {
 
   /// Save product to the database
   void saveProduct(BuildContext context) async {
-    if (_formKey.currentState!.validate() && selectedCategory != null) {
-      final product = {
+    if (_formKey.currentState!.validate()) {
+      await DBHelper.instance.insertProduct({
         'name': nameController.text,
         'price': double.parse(priceController.text),
         'sellPrice': double.parse(sellPriceController.text),
         'category': selectedCategory,
         'description': descriptionController.text,
-      };
+      });
 
-      await DBHelper.instance.insertProduct(product);
-      Navigator.pop(context);
-
+      // Return to the previous screen with success result
+      Navigator.pop(context, true);
     }
   }
 
@@ -54,24 +52,20 @@ class _AddProductPageState extends State<AddProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Product'),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.add),
-        //     onPressed: () async {
-        //       // Navigate to AddCategoryPage
-        //       await Navigator.push(
-        //         context,
-        //         MaterialPageRoute(builder: (context) => AddCategoryPage()),
-        //       );
-        //       fetchCategories(); // Refresh categories after adding a new one
-        //     },
-        //   )
-        // ],
+        title: Text('Add Product', style: TextStyle(fontSize: 22)),
+        elevation: 4,
+        backgroundColor: Colors.blueAccent,
         actions: [
           TextButton(
             onPressed: () => saveProduct(context),
-            child: Text('Save'),
+            child: Text(
+              'SAVE',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -80,96 +74,136 @@ class _AddProductPageState extends State<AddProductPage> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              _buildTextField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Product Name',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)
-                )),
-                validator: (value) => value!.isEmpty ? 'Enter Product Name' : null,
+                labelText: 'Product Name',
+                hintText: 'Enter the product name',
+                validator: (value) =>
+                value!.isEmpty ? 'Enter Product Name' : null,
               ),
-              SizedBox(height: 7,),
-              TextFormField(
+              SizedBox(height: 10),
+              _buildTextField(
                 controller: priceController,
-                decoration: InputDecoration(labelText: 'Price',
-                   border: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(10)
-                     
-                   )
-                ),
+                labelText: 'Price',
+                hintText: 'Enter the price',
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? 'Enter Price' : null,
               ),
-              SizedBox(height: 7,),
-              TextFormField(
+              SizedBox(height: 10),
+              _buildTextField(
                 controller: sellPriceController,
-                decoration: InputDecoration(labelText: 'Sell Price',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)
-
-                    )),
+                labelText: 'Sell Price',
+                hintText: 'Enter the selling price',
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter Sell Price' : null,
+                validator: (value) =>
+                value!.isEmpty ? 'Enter Sell Price' : null,
               ),
-              SizedBox(height: 7,),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                borderRadius: BorderRadius.circular(10),
-
-                items: categories.map((category) {
-                  return DropdownMenuItem(
-
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedCategory = value;
-                  });
-                },
-                decoration: InputDecoration(labelText: 'Category',
-
-                    border: OutlineInputBorder(
-
-                        borderRadius: BorderRadius.circular(10),
-
-
-
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        items: categories.map((category) {
+                          return DropdownMenuItem(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCategory = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Category',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        validator: (value) => value == null ? 'Select a Category' : null,
+                      ),
                     ),
-
-                ),
-                validator: (value) => value == null ? 'Select a Category' : null,
-                icon:   IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () async {
-                    // Navigate to AddCategoryPage
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AddCategoryPage()),
-                    );
-                    fetchCategories(); // Refresh categories after adding a new one
-                  },
+                    SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => AddCategoryPage()),
+                          );
+                          fetchCategories(); // Refresh categories
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.all(12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Icon(Icons.add, size: 20),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 7,),
-              TextFormField(
-                controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Description',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)
 
-                    )),
+
+              SizedBox(height: 10),
+              _buildTextField(
+                controller: descriptionController,
+                labelText: 'Description',
+                hintText: 'Enter a brief description',
                 maxLines: 3,
               ),
               SizedBox(height: 20),
-
+              ElevatedButton(
+                onPressed: () => saveProduct(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'SAVE PRODUCT',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
 
+  /// Reusable TextField Widget
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    String? hintText,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      keyboardType: keyboardType,
+      validator: validator,
+      maxLines: maxLines,
     );
   }
 }

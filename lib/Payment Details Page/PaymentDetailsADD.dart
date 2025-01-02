@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
- // You need to import intl package for date formatting
-import '../DataBase/database.dart';
 import 'package:intl/intl.dart';
+import '../DataBase/database.dart';
 
 class AddPaymentDetailsPage extends StatefulWidget {
   @override
@@ -14,35 +13,37 @@ class _AddPaymentDetailsPageState extends State<AddPaymentDetailsPage> {
   final _amountController = TextEditingController();
   final _dateController = TextEditingController();
 
-  // Set initial date to current date
   DateTime _selectedDate = DateTime.now();
+  bool _isLoading = false; // For loading state
 
   @override
   void initState() {
     super.initState();
-    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate); // Set default date
+    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
   }
 
-  // Function to pick the date
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
-    ) ?? _selectedDate;
+    );
 
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate); // Update the text controller
+        _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
       });
     }
   }
 
-  // Save payment details to the database
   Future<void> savePaymentDetails() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Show loading indicator
+      });
+
       final paymentDetail = {
         'customer_id': int.parse(_customerIdController.text),
         'amount': double.parse(_amountController.text),
@@ -51,59 +52,114 @@ class _AddPaymentDetailsPageState extends State<AddPaymentDetailsPage> {
 
       await DBHelper.instance.insertPaymentDetail(paymentDetail);
 
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Payment details added successfully!')),
       );
 
-      Navigator.pop(context); // Go back after saving
+      Navigator.pop(context); // Return to the previous screen
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Payment Details')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _customerIdController,
-                decoration: InputDecoration(labelText: 'Customer ID'),
-                keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty ? 'Customer ID is required' : null,
-              ),
-              TextFormField(
-                controller: _amountController,
-                decoration: InputDecoration(labelText: 'Amount'),
-                keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty ? 'Amount is required' : null,
-              ),
-              TextFormField(
-                controller: _dateController,
-                decoration: InputDecoration(
-                  labelText: 'Date',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context), // Open date picker
-                  ),
-                ),
-                keyboardType: TextInputType.datetime,
-                validator: (value) => value!.isEmpty ? 'Date is required' : null,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: savePaymentDetails,
-                child: Text('Save Payment Details'),
-              ),
-            ],
-          ),
-        ),
+      appBar: AppBar(
+        title: Text('Add Payment Details'),
+        backgroundColor: Colors.blueAccent,
       ),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  _buildTextField(
+                    controller: _customerIdController,
+                    labelText: 'Customer ID',
+                    hintText: 'Enter the customer ID',
+                    keyboardType: TextInputType.number,
+                    validator: (value) =>
+                    value!.isEmpty ? 'Customer ID is required' : null,
+                  ),
+                  SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _amountController,
+                    labelText: 'Amount',
+                    hintText: 'Enter the payment amount',
+                    keyboardType: TextInputType.number,
+                    validator: (value) =>
+                    value!.isEmpty ? 'Amount is required' : null,
+                  ),
+                  SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () => _selectDate(context),
+                    child: AbsorbPointer(
+                      child: _buildTextField(
+                        controller: _dateController,
+                        labelText: 'Date',
+                        hintText: 'Select a date',
+                        suffixIcon: Icons.calendar_today,
+                        validator: (value) =>
+                        value!.isEmpty ? 'Date is required' : null,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: savePaymentDetails,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Save Payment Details',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isLoading)
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    String? hintText,
+    TextInputType keyboardType = TextInputType.text,
+    IconData? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        filled: true,
+        fillColor: Colors.grey[100],
+      ),
+      keyboardType: keyboardType,
+      validator: validator,
     );
   }
 }
