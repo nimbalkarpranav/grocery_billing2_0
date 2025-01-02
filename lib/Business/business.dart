@@ -16,6 +16,7 @@ class BusinessEdit extends StatefulWidget {
 }
 
 class _BusinessEditState extends State<BusinessEdit> {
+  bool isEdit = false;
   String? _imagePath;
   TextEditingController bName = TextEditingController();
   TextEditingController bEmail = TextEditingController();
@@ -65,8 +66,28 @@ class _BusinessEditState extends State<BusinessEdit> {
       setState(() {
         _imagePath = newPath;
       });
-      _saveData();
+      if (isEdit) _saveData();
     }
+  }
+
+  void _enableEdit() {
+    setState(() {
+      isEdit = true;
+    });
+  }
+
+  void _saveChanges() {
+    setState(() {
+      isEdit = false;
+    });
+    _saveData();
+  }
+
+  void _discardChanges() {
+    setState(() {
+      isEdit = false;
+    });
+    _loadSavedData();
   }
 
   @override
@@ -74,8 +95,25 @@ class _BusinessEditState extends State<BusinessEdit> {
     return Scaffold(
       drawer: drawerPage(),
       appBar: AppBar(
-        title: const Text("BusinessEdit Profile"),
+        title: const Text("Profile Page"),
         centerTitle: true,
+        actions: isEdit
+            ? [
+          IconButton(
+            onPressed: _saveChanges,
+            icon: const Icon(Icons.save),
+          ),
+          IconButton(
+            onPressed: _discardChanges,
+            icon: const Icon(Icons.cancel),
+          ),
+        ]
+            : [
+          IconButton(
+            onPressed: _enableEdit,
+            icon: const Icon(Icons.edit),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -84,8 +122,11 @@ class _BusinessEditState extends State<BusinessEdit> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "BusinessEdit Image",
-                style: TextStyle(fontSize: 21, color: Colors.black, fontWeight: FontWeight.bold),
+                "Business Image",
+                style: TextStyle(
+                    fontSize: 21,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold),
               ),
               Center(
                 child: Container(
@@ -99,8 +140,9 @@ class _BusinessEditState extends State<BusinessEdit> {
                       backgroundColor: Colors.blueAccent,
                       maxRadius: 33,
                       child: IconButton(
-                        onPressed: _pickImage,
-                        icon: const Icon(CupertinoIcons.camera, size: 44, color: Colors.white),
+                        onPressed: isEdit ? _pickImage : null,
+                        icon: const Icon(CupertinoIcons.camera,
+                            size: 44, color: Colors.white),
                       ),
                     ),
                   )
@@ -108,32 +150,44 @@ class _BusinessEditState extends State<BusinessEdit> {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildTextField("Name", "Enter BusinessEdit name", bName),
-              _buildTextField("Email", "Enter BusinessEdit email", bEmail),
-              _buildTextField("Phone", "Enter phone number", bPhone, keyboardType: TextInputType.phone),
-              _buildTextField("Address", "Enter BusinessEdit address", bAddress),
-              _buildTextField("Description", "Enter BusinessEdit description", bDescription, maxLines: 3),
+              _buildTextField("Name", "Enter Business name", bName),
+              _buildTextField("Email", "Enter Business email", bEmail),
+              _buildTextField(
+                "Phone",
+                "Enter phone number",
+                bPhone,
+                keyboardType: TextInputType.phone,
+              ),
+              _buildTextField("Address", "Enter Business address", bAddress),
+              _buildTextField(
+                "Description",
+                "Enter Business description",
+                bDescription,
+                maxLines: 3,
+              ),
             ],
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _saveData,
-        child: const Icon(Icons.save),
-      ),
     );
   }
 
-  Widget _buildTextField(String label, String hint, TextEditingController controller,
-      {TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  Widget _buildTextField(
+      String label,
+      String hint,
+      TextEditingController controller, {
+        TextInputType keyboardType = TextInputType.text,
+        int maxLines = 1,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
-        onChanged: (value) => _saveData(),
+        enabled: isEdit,
         decoration: InputDecoration(
+
           labelText: label,
           hintText: hint,
           border: OutlineInputBorder(
