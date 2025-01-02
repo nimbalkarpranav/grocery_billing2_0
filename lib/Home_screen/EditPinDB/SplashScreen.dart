@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'login.dart';
 import 'PinScreen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -14,9 +16,27 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
+  }
+
+  // Function to check login status
+  _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    // Navigate based on login status after the splash screen
     Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => PinScreen()));
+      if (isLoggedIn) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PinScreen()), // Or HomePage
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
     });
   }
 
@@ -28,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.blue], // Changed colors to green and blue
+            colors: [Colors.blueAccent, Colors.blue], // Gradient colors
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -42,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blueAccent, // Adjusted shadow color to blue
+                  color: Colors.blueAccent, // Shadow color
                   blurRadius: 15,
                   offset: Offset(0, 10),
                 ),
@@ -50,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             child: ClipOval(
               child: Icon(
-                CupertinoIcons.cart,
+                CupertinoIcons.cart, // Icon for splash screen
                 color: Colors.white,
                 size: 70,
               ),

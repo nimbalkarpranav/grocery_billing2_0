@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/Billing_page/product_billing.dart';
+import 'package:grocery_billing2_0/drawer/drawer.dart';
 import '../DataBase/database.dart';
 import '../addproduct.dart';
 import '../profile.dart';
+import 'editeProduct.dart';
 
 class ProductListPage extends StatefulWidget {
   @override
@@ -10,150 +13,147 @@ class ProductListPage extends StatefulWidget {
 
 class _ProductListPageState extends State<ProductListPage> {
   List<Map<String, dynamic>> products = [];
+  List<Map<String, dynamic>> cart = []; // Local cart list
 
-  // Fetch the list of products from the database
+  /// Fetch products from the database
   Future<void> fetchProducts() async {
-    final data = await DBHelper.instance.fetchProducts();
-    setState(() {
-      products = data;
-    });
+    try {
+      final data = await DBHelper.instance.fetchProducts();
+      if (mounted) {
+        setState(() {
+          products = data;
+        });
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error fetching products'),
+        duration: Duration(seconds: 2),
+      ));
+    }
   }
 
-  // Delete a product from the database
+  /// Check if the product is already in the cart
+  bool isProductInCart(Map<String, dynamic> product) {
+    return cart.any((item) => item['id'] == product['id']);
+  }
 
+  /// Add product to the cart
+  // void addToCart(Map<String, dynamic> product) {
+  //   if (!isProductInCart(product)) {
+  //     setState(() {
+  //       cart.add(product);
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //       content: Text('${product['name']} added to cart!'),
+  //       duration: Duration(seconds: 2),
+  //     ));
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //       content: Text('${product['name']} is already in the cart!'),
+  //       duration: Duration(seconds: 2),
+  //     ));
+  //   }
+  // }
 
   @override
   void initState() {
     super.initState();
-    fetchProducts(); // Fetch the products when the page loads
+    fetchProducts(); // Fetch products when the page is initialized
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
-        title: Text('Product List', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: Text('Product List', style: TextStyle(fontSize: 24)),
         backgroundColor: Colors.blueAccent,
         elevation: 4,
-      ),
-      drawer:  Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person, color: Colors.blueAccent),
-              title: Text('Profile ', style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              // Navigate to BillingPage only if there are products in the cart
+              if (cart.isNotEmpty) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Profile()), // Navigate to Product List page
+                  MaterialPageRoute(
+                    builder: (context) =>AddProductPage(),
+                  ),
                 );
-              },
-            ),
-            // ListTile(
-            //   leading: Icon(Icons.list, color: Colors.blueAccent),
-            //   title: Text('Product List', style: TextStyle(fontSize: 18)),
-            //   onTap: () {
-            //     Navigator.pop(context); // Close the drawer
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => ProductListPage()), // Navigate to Product List page
-            //     );
-            //   },
-            // ),
-
-            ListTile(
-              leading: Icon(Icons.add, color: Colors.blueAccent),
-              title: Text('Add Product', style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddProductPage()), // Navigate to Add Product page
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: products.isEmpty
-            ? Center(
-          child: Text(
-            'No Products Found',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(''),
+                  duration: Duration(seconds: 2),
+                ));
+              }
+            },
           ),
-        )
-            : ListView.builder(
-          itemCount: products.length,
-          itemBuilder: (context, index) {
-            final product = products[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(16),
-                  title: Text(
-                    product['name'],
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Price: ${product['price']}',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                      Text(
-                        'Sell Price: ${product['sellPrice']}',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                      Text(
-                        'Category: ${product['category']}',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                      ),
-                    ],
-                  ),
-                  tileColor: Colors.white,
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      // Ask for confirmation before deleting
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Confirm Deletion'),
-                          content: Text('Are you sure you want to delete this product?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Close the dialog
-                              },
-                              child: Text('Cancel'),
-                            ),
-
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
+        ],
+      ),
+      body: products.isEmpty
+          ? Center(
+        child: Text(
+          'No Products Found',
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey),
         ),
+      )
+          : ListView.builder(
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16.0, vertical: 8.0),
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+
+
+                onLongPress: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProductPage(product: product),
+                    ),
+                  );
+                  if (result == true) {
+                    fetchProducts(); // Refresh products after editing
+                  }
+                },
+
+                contentPadding: EdgeInsets.all(16),
+                title: Text(
+                  product['name'],
+                  style: TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('MRP: ${product['price']}',
+                        style: TextStyle(fontSize: 10)),
+
+
+                   // Text('Category: ${product['category']}',
+                     //   style: TextStyle(fontSize: 16)),
+                  ],
+                ),
+               trailing:Text('Sell Price: ${product['sellPrice']}',style: TextStyle(fontSize: 10)),
+                onTap: () {
+                  //addToCart(product); // Add product to cart
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }

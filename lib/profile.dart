@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'drawer/drawer.dart';
+
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
@@ -74,6 +76,7 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: const Text("Profile Page"),
         centerTitle: true,

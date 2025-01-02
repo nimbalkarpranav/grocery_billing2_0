@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/business_edit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'drawer/drawer.dart';
+
 class Business extends StatefulWidget {
   const Business({super.key});
 
@@ -40,6 +42,7 @@ class _BusinessState extends State<Business> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: const Text("Business Profile"),
         centerTitle: true,

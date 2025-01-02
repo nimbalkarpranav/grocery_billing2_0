@@ -17,79 +17,144 @@ class DBHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-
-
     return await openDatabase(
       path,
-      version: 2,
+      version: 4, // Updated version to reflect the new tables
       onCreate: _createDB,
-      onUpgrade: _upgradeDB,
     );
   }
 
   Future _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        price REAL NOT NULL,
-        sellPrice REAL NOT NULL,
-        category TEXT NOT NULL,
-        description TEXT
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE castamur (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      )
-    ''');
+    // Products Table
+    await db.execute('''CREATE TABLE products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      price REAL NOT NULL,
+      sellPrice REAL NOT NULL,
+      category TEXT NOT NULL,
+      description TEXT
+    )''');
+
+    // Categories Table
+    await db.execute('''CREATE TABLE categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL
+    )''');
+
+    // Customers Table
+    await db.execute('''CREATE TABLE customers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT
+    )''');
+
+    // Payment Details Table
+    await db.execute('''CREATE TABLE payment_details (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      FOREIGN KEY (customer_id) REFERENCES customers (id)
+    )''');
   }
 
-  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute('''
-        CREATE TABLE categories (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL
-        )
-      ''');
-    }
-  }
-
+  // Insert Category
   Future<int> insertCategory(Map<String, dynamic> category) async {
     final db = await instance.database;
     return await db.insert('categories', category);
   }
 
+  // Fetch Categories
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final db = await instance.database;
     return await db.query('categories');
   }
 
-  Future<int>insertCastamur(Map<String,dynamic>castamur)async{
-    final db=await instance.database;
-    return await db.insert('castamur', castamur);
-  }
-  Future<int>fetchCastamur(Map<String,double>castamur)async{
-    final db=await instance.database;
-    return await db.insert('castamur', castamur);
-  }
-
-
+  // Insert Product
   Future<int> insertProduct(Map<String, dynamic> product) async {
     final db = await instance.database;
     return await db.insert('products', product);
   }
 
+  // Fetch Products
   Future<List<Map<String, dynamic>>> fetchProducts() async {
     final db = await instance.database;
     return await db.query('products');
+  }
+
+  // Update Product
+  Future<void> updateProduct(Map<String, dynamic> product) async {
+    final db = await database;
+    await db.update(
+      'products',
+      product,
+      where: 'id = ?',
+      whereArgs: [product['id']],
+    );
+  }
+
+  // Insert Customer
+  Future<int> insertCustomer(Map<String, dynamic> customer) async {
+    final db = await instance.database;
+    return await db.insert('customers', customer);
+  }
+
+  // Fetch Customers
+  Future<List<Map<String, dynamic>>> fetchCustomers() async {
+    final db = await instance.database;
+    return await db.query('customers');
+  }
+  // Delete Customer
+  Future<int> deleteCustomer(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'customers',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+  // Update Customer
+  Future<int> updateCustomer(Map<String, dynamic> customer) async {
+    final db = await instance.database;
+    return await db.update(
+      'customers',
+      customer,
+      where: 'id = ?',
+      whereArgs: [customer['id']],
+    );
+  }
+
+
+
+  // Insert Payment Details
+  Future<int> insertPaymentDetail(Map<String, dynamic> paymentDetail) async {
+    final db = await instance.database;
+    return await db.insert('payment_details', paymentDetail);
+  }
+
+  // Fetch Payment Details
+  Future<List<Map<String, dynamic>>> fetchPaymentDetails() async {
+    final db = await instance.database;
+    return await db.query('payment_details');
+  }
+  Future<int> updatePaymentDetail(Map<String, dynamic> paymentDetail) async {
+    final db = await instance.database;
+    return await db.update(
+      'payment_details',
+      paymentDetail,
+      where: 'id = ?',
+      whereArgs: [paymentDetail['id']],
+    );
+  }
+
+// Delete Payment Details
+  Future<int> deletePaymentDetail(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'payment_details',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/productlist.dart';
-import 'package:grocery_billing2_0/profile.dart';
-import '../addproduct.dart';
-import '../business.dart';
-import 'EditPinDB/editpin.dart';
+import 'package:grocery_billing2_0/Payment%20Details%20Page/Payment%20Details%20list.dart';
+import 'package:grocery_billing2_0/drawer/drawer.dart';
+
+import '../customer/customerlist.dart';
+ // Replace with your settings page
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,41 +12,41 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-
-
-  TextEditingController pinController = TextEditingController();
-
-  void editPin() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Edit PIN"),
-        content: TextField(
-          keyboardType: TextInputType.number,
-          controller: pinController,
-          obscureText: true,
-          maxLength: 4,
-          decoration: InputDecoration(hintText: "New PIN"),
+  Widget buildDashboardCard({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              final newPin = pinController.text;
-              if (newPin.isNotEmpty && newPin.length == 4) {
-                DatabaseHelper.instance.updatePin(newPin);
-                Navigator.pop(context);
-              } else {
-                // Show error message if PIN is invalid
-              }
-            },
-            child: Text("Save"),
+        child: Container(
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(16),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 48, color: color),
+              SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -54,79 +55,64 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: Text('Dashboard',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
         elevation: 4,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+     drawer: drawerPage(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.count(
+          crossAxisCount: 2, // Two cards per row
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person, color: Colors.blueAccent),
-              title: Text('Profile ', style: TextStyle(fontSize: 18)),
+            buildDashboardCard(
+              icon: Icons.list,
+              title: 'Product',
+              color: Colors.blue,
               onTap: () {
-                Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Profile()), // Navigate to Product List page
+                  MaterialPageRoute(builder: (context) => ProductListPage()),
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.person, color: Colors.blueAccent),
-              title: Text('Business ', style: TextStyle(fontSize: 18)),
+            buildDashboardCard(
+              icon: Icons.people,
+              title: 'Customer',
+              color: Colors.green,
               onTap: () {
-                Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Business()), // Navigate to Product List page
+                  MaterialPageRoute(builder: (context) => CustomerPage()), // Replace with actual page
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.list, color: Colors.blueAccent),
-              title: Text('Product List', style: TextStyle(fontSize: 18)),
+            buildDashboardCard(
+              icon: Icons.payment,
+              title: 'Payment Details',
+              color: Colors.orange,
               onTap: () {
-                Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProductListPage()), // Navigate to Product List page
+                  MaterialPageRoute(builder: (context) => PaymentDetailsPage()), // Replace with actual page
                 );
               },
             ),
-
-            ListTile(
-              leading: Icon(Icons.add, color: Colors.blueAccent),
-              title: Text('Add Product', style: TextStyle(fontSize: 18)),
+            buildDashboardCard(
+              icon: Icons.settings,
+              title: 'Settings',
+              color: Colors.purple,
               onTap: () {
-                Navigator.pop(context); // Close the drawer
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AddProductPage()), // Navigate to Add Product page
+                  MaterialPageRoute(builder: (context) => ProductListPage()), // Replace with actual page
                 );
               },
-            ),
-
-            ListTile(
-              leading: Icon(Icons.add, color: Colors.blueAccent),
-              title: Text('Edit Pin', style: TextStyle(fontSize: 18)),
-              onTap:  editPin,
             ),
           ],
-        ),
-      ),
-      body: Center(
-        child: const Padding(
-          padding: EdgeInsets.all(10.0),
-          child: Text('Welcome \n   to the\nDashboard', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blueAccent),),
         ),
       ),
     );
