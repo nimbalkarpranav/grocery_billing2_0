@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import 'drawer/drawer.dart';
 
@@ -11,10 +13,11 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  String userName = "Person Name";
-  String email = "example@email.com";
-  String phone = "1234567890";
-  String address = "Default Address";
+  String userName = "";
+  String email = "";
+  String phone = "";
+  String address = "";
+  String profileImagePath = "";
 
   // Controllers for editing
   final TextEditingController _nameController = TextEditingController();
@@ -30,22 +33,34 @@ class _ProfileState extends State<Profile> {
     _loadUserData();
   }
 
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userName = prefs.getString('userName') ?? "Person Name";
-      email = prefs.getString('email') ?? "example@email.com";
-      phone = prefs.getString('phone') ?? "1234567890";
-      address = prefs.getString('address') ?? "Default Address";
-    });
+  Future<void> _saveUserData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userName', userName);
+      await prefs.setString('email', email);
+      await prefs.setString('phone', phone);
+      await prefs.setString('address', address);
+      await prefs.setString('profileImagePath', profileImagePath);
+      debugPrint("Data saved successfully");
+    } catch (e) {
+      debugPrint("Error saving data: $e");
+    }
   }
 
-  Future<void> _saveUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userName', userName);
-    await prefs.setString('email', email);
-    await prefs.setString('phone', phone);
-    await prefs.setString('address', address);
+  Future<void> _loadUserData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        userName = prefs.getString('userName') ?? "";
+        email = prefs.getString('email') ?? "";
+        phone = prefs.getString('phone') ?? "";
+        address = prefs.getString('address') ?? "";
+        profileImagePath = prefs.getString('profileImagePath') ?? "";
+      });
+      debugPrint("Data loaded successfully");
+    } catch (e) {
+      debugPrint("Error loading data: $e");
+    }
   }
 
   void _enableEdit() {
@@ -75,12 +90,26 @@ class _ProfileState extends State<Profile> {
     });
   }
 
+  Future<void> _changeImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile =
+    await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        profileImagePath = pickedFile.path;
+      });
+      _saveUserData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: drawerPage(),
       appBar: AppBar(
         title: const Text("Profile Page"),
+        backgroundColor: Colors.blueAccent,
         centerTitle: true,
         actions: isEdit
             ? [
@@ -106,10 +135,16 @@ class _ProfileState extends State<Profile> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const CircleAvatar(
-                backgroundColor: Colors.blueAccent,
-                maxRadius: 30,
-                backgroundImage: AssetImage('assetsimage/propic.jpeg'),
+              GestureDetector(
+                onTap: _changeImage,
+                child: CircleAvatar(
+                  backgroundColor: Colors.blueAccent,
+                  maxRadius: 50,
+                  backgroundImage: profileImagePath.isNotEmpty
+                      ? FileImage(File(profileImagePath))
+                      : const AssetImage('assetsimage/propic.jpeg')
+                  as ImageProvider,
+                ),
               ),
               const SizedBox(height: 20),
               _buildTextField(
@@ -159,7 +194,8 @@ class _ProfileState extends State<Profile> {
         enabled: isEnabled,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color:Colors.black87 ,fontWeight: FontWeight.bold),
+          labelStyle: const TextStyle(
+              color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 20),
           hintText: value,
           hintStyle: const TextStyle(color: Colors.blue),
           border: OutlineInputBorder(
@@ -174,10 +210,10 @@ class _ProfileState extends State<Profile> {
             borderSide: const BorderSide(color: Colors.blue),
           ),
           filled: true,
-          fillColor: isEnabled ? Colors.blue.shade100 : Colors.blue.shade50,
+          // fillColor: isEnabled ? Colors.blue.shade100 : Colors.blue.shade50,
         ),
         style: TextStyle(
-          color: isEnabled ? Colors.black : Colors.grey.shade700,
+          color: isEnabled ? Colors.black : Colors.black87,
         ),
       ),
     );

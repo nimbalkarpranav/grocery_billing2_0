@@ -2,10 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Home_screen/home_screen.dart';
 
+import '../Business/business.dart';
 import '../Home_screen/EditPinDB/editpin.dart';
 import '../Home_screen/productlist.dart';
 import '../addproduct.dart';
-import '../business.dart';
+
 import '../profile.dart';
 
 class drawerPage extends StatefulWidget {
@@ -45,6 +46,7 @@ class _drawerPageState extends State<drawerPage> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -88,7 +90,7 @@ class _drawerPageState extends State<drawerPage> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Business()),
+                MaterialPageRoute(builder: (context) => BusinessEdit()),
               );
             },
           ),
