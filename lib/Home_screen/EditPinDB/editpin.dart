@@ -67,10 +67,10 @@ class DatabaseHelper {
     final res = await db.insert('pin', {'pin': pin});
     return res;
   }
-  Future<int> deleteAllUsers() async {
-    final db = await database;
-    return await db.delete('users'); // Deletes all user rows
-  }
+  // Future<int> deleteAllUsers() async {
+  //   final db = await database;
+  //   return await db.delete('users'); // Deletes all user rows
+  // }
   Future<int> deletePin() async {
     final db = await database;
     return await db.delete('pin'); // Deletes all rows in the pin table

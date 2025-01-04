@@ -27,7 +27,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     final confirmation = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Payment Detail'),
+        title: Text('Delete Payment Detail', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text('Are you sure you want to delete this payment detail?'),
         actions: [
           TextButton(
@@ -36,7 +36,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete'),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -57,7 +57,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
         final dateController = TextEditingController(text: detail['date']);
 
         return AlertDialog(
-          title: Text('Update Payment Detail'),
+          title: Text('Update Payment Detail', style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -104,10 +104,11 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment Details'),
+        backgroundColor: Colors.blueAccent,
+        title: Text('Payment Details', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, size: 30),
             onPressed: () {
               Navigator.push(
                 context,
@@ -120,28 +121,35 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
         ],
       ),
       body: paymentDetails.isEmpty
-          ? Center(child: Text('No payment details found.'))
+          ? Center(child: Text('No payment details found.', style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic)))
           : ListView.builder(
         itemCount: paymentDetails.length,
         itemBuilder: (context, index) {
           final detail = paymentDetails[index];
-          return GestureDetector(
-            onLongPress: () => updatePaymentDetail(detail), // Long press to update
-            child: ListTile(
-              title: Text('Customer ID: ${detail['customer_id']}'),
-              subtitle: Text('Amount: ${detail['amount']} \nDate: ${detail['date']}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // IconButton(
-                  //   icon: Icon(Icons.edit, color: Colors.blue),
-                  //   onPressed: () => updatePaymentDetail(detail),
-                  // ),
-                  IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => deletePaymentDetail(detail['id']),
-                  ),
-                ],
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Container(
+              //elevation: 5,
+              //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              color: Colors.white60,
+              child: ListTile(
+                contentPadding: EdgeInsets.all(16),
+                title: Text('Customer ID: ${detail['customer_id']}',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Amount: ${detail['amount'].toString()}',
+                        style: TextStyle(color: Colors.green)),
+                    Text('Date: ${detail['date']}',
+                        style: TextStyle(color: Colors.blue)),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red, size: 30),
+                  onPressed: () => deletePaymentDetail(detail['id']),
+                ),
+                onLongPress: () => updatePaymentDetail(detail),
               ),
             ),
           );

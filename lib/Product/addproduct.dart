@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/Home_screen/productlist.dart';
-import 'DataBase/database.dart';
-import 'addC.dart';
+import 'package:grocery_billing2_0/Product/productlist.dart';
+import '../DataBase/database.dart';
+import '../addC.dart';
 
 class AddProductPage extends StatefulWidget {
   @override

@@ -3,7 +3,7 @@ import 'package:grocery_billing2_0/Billing_page/product_billing.dart';
 import 'package:grocery_billing2_0/drawer/drawer.dart';
 import '../DataBase/database.dart';
 import '../Payment Details Page/PaymentDetailsADD.dart';
-import '../addproduct.dart';
+import 'addproduct.dart';
 import '../profile.dart';
 import 'editeProduct.dart';
 
@@ -14,9 +14,34 @@ class ProductListPage extends StatefulWidget {
 
 class _ProductListPageState extends State<ProductListPage> {
   List<Map<String, dynamic>> products = [];
-  List<Map<String, dynamic>> cart = []; // Local cart list
 
   /// Fetch products from the database
+  ///
+  Future<void> deleteProduct(int id) async {
+    final confirmation = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Product', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to delete this product?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmation == true) {
+      await DBHelper.instance.deleteProduct(id);
+      fetchProducts(); // Refresh list
+    }
+  }
+
   Future<void> fetchProducts() async {
     try {
       final data = await DBHelper.instance.fetchProducts();
@@ -34,24 +59,35 @@ class _ProductListPageState extends State<ProductListPage> {
     }
   }
 
-  /// Check if the product is already in the cart
-  bool isProductInCart(Map<String, dynamic> product) {
-    return cart.any((item) => item['id'] == product['id']);
-  }
-
-  /// Add product to the cart
-  // void addToCart(Map<String, dynamic> product) {
-  //   if (!isProductInCart(product)) {
-  //     setState(() {
-  //       cart.add(product);
-  //     });
+  /// Delete product from the database
+  // Future<void> deleteProduct(int id) async {
+  //   final confirmation = await showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         title: Text('Delete Product'),
+  //         content: Text('Are you sure you want to delete this product?'),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context, false),
+  //             child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.pop(context, true);
+  //             },
+  //             child: Text('Delete', style: TextStyle(color: Colors.red)),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  //
+  //   if (confirmation == true) {
+  //     await DBHelper.instance.deleteProduct(id);
+  //     fetchProducts(); // Refresh the list after deletion
   //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       content: Text('${product['name']} added to cart!'),
-  //       duration: Duration(seconds: 2),
-  //     ));
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       content: Text('${product['name']} is already in the cart!'),
+  //       content: Text('Product deleted successfully'),
   //       duration: Duration(seconds: 2),
   //     ));
   //   }
@@ -84,7 +120,6 @@ class _ProductListPageState extends State<ProductListPage> {
               }
             },
           ),
-
         ],
       ),
       body: products.isEmpty
@@ -110,20 +145,18 @@ class _ProductListPageState extends State<ProductListPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
-
-
                 onLongPress: () async {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditProductPage(product: product),
+                      builder: (context) =>
+                          EditProductPage(product: product),
                     ),
                   );
                   if (result == true) {
                     fetchProducts(); // Refresh products after editing
                   }
                 },
-
                 contentPadding: EdgeInsets.all(16),
                 title: Text(
                   product['name'],
@@ -135,13 +168,23 @@ class _ProductListPageState extends State<ProductListPage> {
                   children: [
                     Text('MRP: ${product['price']}',
                         style: TextStyle(fontSize: 10)),
-
-
-                   // Text('Category: ${product['category']}',
-                     //   style: TextStyle(fontSize: 16)),
                   ],
                 ),
-               trailing:Text('Sell Price: ${product['sellPrice']}',style: TextStyle(fontSize: 10)),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Sell Price: ${product['sellPrice']}',
+                      style: TextStyle(fontSize: 10),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        deleteProduct(product['id']);
+                      },
+                    ),
+                  ],
+                ),
                 onTap: () {
                   //addToCart(product); // Add product to cart
                 },
