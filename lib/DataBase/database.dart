@@ -97,11 +97,12 @@ class DBHelper {
   Future<int> deleteProduct(int id) async {
     final db = await instance.database;
     return await db.delete(
-      'customers',
+      'products',  // Correct table: 'products'
       where: 'id = ?',
       whereArgs: [id],
     );
   }
+
 
   // Insert Customer
   Future<int> insertCustomer(Map<String, dynamic> customer) async {

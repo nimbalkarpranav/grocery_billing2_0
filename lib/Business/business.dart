@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../drawer/drawer.dart';
 
+
 class BusinessEdit extends StatefulWidget {
   const BusinessEdit({super.key});
 
@@ -67,13 +68,6 @@ class _BusinessEditState extends State<BusinessEdit> {
         _imagePath = newPath;
       });
       if (isEdit) _saveData();
-    } else {
-      // Feedback if no image is selected
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No image selected")),
-        );
-      }
     }
   }
 
@@ -102,11 +96,7 @@ class _BusinessEditState extends State<BusinessEdit> {
     return Scaffold(
       drawer: drawerPage(),
       appBar: AppBar(
-        title: const Text(
-          "Business Profile",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.blueAccent,
+        title: const Text("Profile Page"),
         centerTitle: true,
         actions: isEdit
             ? [
@@ -135,66 +125,42 @@ class _BusinessEditState extends State<BusinessEdit> {
               const Text(
                 "Business Image",
                 style: TextStyle(
-                  fontSize: 21,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 21,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
               Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      height: 100,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.blueAccent, width: 2),
-                        image: _imagePath != null
-                            ? DecorationImage(
-                          image: FileImage(File(_imagePath!)),
-                          fit: BoxFit.cover,
-                        )
-                            : null,
-                      ),
-                      child: _imagePath == null
-                          ? IconButton(
+                child: Container(
+                  height: 140,
+                  width: 300,
+                  color: Colors.black,
+                  child: _imagePath == null
+                      ? Padding(
+                    padding: const EdgeInsets.all(33.0),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.blueAccent,
+                      maxRadius: 33,
+                      child: IconButton(
                         onPressed: isEdit ? _pickImage : null,
-                        icon: const Icon(
-                          CupertinoIcons.camera,
-                          size: 44,
-                          color: Colors.black,
-                        ),
-                      )
-                          : null,
-                    ),
-                    if (isEdit && _imagePath != null)
-                      Positioned(
-                        bottom: -8,
-                        right: -8,
-                        child: IconButton(
-                          onPressed: _pickImage,
-                          icon: const Icon(
-                            CupertinoIcons.camera_fill,
-                            color: Colors.black,
-                          ),
-                        ),
+                        icon: const Icon(CupertinoIcons.camera,
+                            size: 44, color: Colors.white),
                       ),
-                  ],
+                    ),
+                  )
+                      : Image.file(File(_imagePath!)),
                 ),
               ),
               const SizedBox(height: 20),
-              _buildCardField("Name", "Enter Business name", bName),
-              _buildCardField("Email", "Enter Business email", bEmail),
-              _buildCardField(
+              _buildTextField("Name", "Enter Business name", bName),
+              _buildTextField("Email", "Enter Business email", bEmail),
+              _buildTextField(
                 "Phone",
                 "Enter phone number",
                 bPhone,
                 keyboardType: TextInputType.phone,
               ),
-              _buildCardField("Address", "Enter Business address", bAddress),
-              _buildCardField(
+              _buildTextField("Address", "Enter Business address", bAddress),
+              _buildTextField(
                 "Description",
                 "Enter Business description",
                 bDescription,
@@ -207,45 +173,27 @@ class _BusinessEditState extends State<BusinessEdit> {
     );
   }
 
-  Widget _buildCardField(
+  Widget _buildTextField(
       String label,
       String hint,
       TextEditingController controller, {
         TextInputType keyboardType = TextInputType.text,
         int maxLines = 1,
       }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 15),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
-              ),
-            ),
-            TextField(
-              controller: controller,style: TextStyle(color: Colors.black87),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        enabled: isEdit,
+        decoration: InputDecoration(
 
-              keyboardType: keyboardType,
-              maxLines: maxLines,
-              enabled: isEdit,
-              decoration: InputDecoration(
-                hintText: hint,
-                border: InputBorder.none,
-
-              ),
-            ),
-          ],
+          labelText: label,
+          hintText: hint,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(7),
+          ),
         ),
       ),
     );

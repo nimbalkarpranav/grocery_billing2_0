@@ -4,8 +4,8 @@ import 'package:grocery_billing2_0/Home_screen/home_screen.dart';
 
 import '../Business/business.dart';
 import '../Home_screen/EditPinDB/editpin.dart';
-import '../Home_screen/productlist.dart';
-import '../addproduct.dart';
+import '../Product/productlist.dart';
+import '../Product/addproduct.dart';
 
 import '../profile.dart';
 
@@ -22,7 +22,7 @@ class _drawerPageState extends State<drawerPage> {
   Future<void> logout() async {
     try {
       // Clear user and PIN data
-      await dbHelper.deleteAllUsers();
+      // await dbHelper.deleteAllUsers();
       print('All user data deleted');
       await dbHelper.deletePin();
       print('PIN deleted');
@@ -105,21 +105,21 @@ class _drawerPageState extends State<drawerPage> {
               );
             },
           ),
-          ListTile(
-            leading: Icon(Icons.add, color: Colors.blueAccent),
-            title: Text('Add Product', style: TextStyle(fontSize: 18)),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddProductPage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.edit, color: Colors.blueAccent),
-            title: Text('Edit Pin', style: TextStyle(fontSize: 18)),
-          ),
+          // ListTile(
+          //   leading: Icon(Icons.add, color: Colors.blueAccent),
+          //   title: Text('Add Product', style: TextStyle(fontSize: 18)),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (context) => AddProductPage()),
+          //     );
+          //   },
+          // ),
+          // ListTile(
+          //   leading: Icon(Icons.edit, color: Colors.blueAccent),
+          //   title: Text('Edit Pin', style: TextStyle(fontSize: 18)),
+          // ),
           ListTile(
             leading: Icon(Icons.logout, color: Colors.red),
             title: Text('Logout', style: TextStyle(fontSize: 18)),

@@ -22,11 +22,11 @@ class _CustomerPageState extends State<CustomerPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete'),
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -45,8 +45,7 @@ class _CustomerPageState extends State<CustomerPage> {
       builder: (context) {
         final nameController = TextEditingController(text: customer['name']);
         final phoneController = TextEditingController(text: customer['phone']);
-        final emailController =
-        TextEditingController(text: customer['email'] ?? '');
+        final emailController = TextEditingController(text: customer['email'] ?? '');
 
         return AlertDialog(
           title: Text('Update Customer'),
@@ -72,7 +71,7 @@ class _CustomerPageState extends State<CustomerPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, null),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
               onPressed: () {
@@ -83,7 +82,7 @@ class _CustomerPageState extends State<CustomerPage> {
                   'email': emailController.text,
                 });
               },
-              child: Text('Save'),
+              child: Text('Save', style: TextStyle(color: Colors.blueAccent)),
             ),
           ],
         );
@@ -100,10 +99,11 @@ class _CustomerPageState extends State<CustomerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Customers'),
+        title: Text('Customers', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -121,21 +121,39 @@ class _CustomerPageState extends State<CustomerPage> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No customers found.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_add_alt, size: 50, color: Colors.blueAccent),
+                  SizedBox(height: 10),
+                  Text('No customers found.', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            );
           } else {
             final customers = snapshot.data!;
             return ListView.builder(
               itemCount: customers.length,
               itemBuilder: (context, index) {
                 final customer = customers[index];
-                return ListTile(
-                  title: Text(customer['name']),
-                  subtitle: Text(customer['phone']),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => deleteCustomer(customer['id']),
+                return Container(
+                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  // elevation: 4,
+                  // shape: RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.circular(12),
+                  // ),
+                  color: Colors.white54,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    title: Text(customer['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(customer['phone']),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => deleteCustomer(customer['id']),
+                    ),
+                    onLongPress: () => updateCustomer(customer),
                   ),
-                  onLongPress: () => updateCustomer(customer),
                 );
               },
             );
