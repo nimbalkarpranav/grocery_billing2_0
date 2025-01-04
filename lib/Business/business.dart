@@ -150,20 +150,34 @@ class _BusinessEditState extends State<BusinessEdit> {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildTextField("Name", "Enter Business name", bName),
-              _buildTextField("Email", "Enter Business email", bEmail),
+              _buildTextField(
+                  "Name",
+                  "Enter Business name",
+                  bName,
+                  isEnabled: isEdit),
+
+              _buildTextField("Email",
+                  "Enter Business email",
+                  bEmail,
+                  isEnabled: isEdit),
               _buildTextField(
                 "Phone",
                 "Enter phone number",
                 bPhone,
                 keyboardType: TextInputType.phone,
+                isEnabled:isEdit
               ),
-              _buildTextField("Address", "Enter Business address", bAddress),
+              _buildTextField("Address",
+                  "Enter Business address",
+                  bAddress,
+                  isEnabled:isEdit
+              ),
               _buildTextField(
                 "Description",
                 "Enter Business description",
                 bDescription,
                 maxLines: 3,
+                isEnabled:isEdit
               ),
             ],
           ),
@@ -174,10 +188,11 @@ class _BusinessEditState extends State<BusinessEdit> {
 
   Widget _buildTextField(
       String label,
-      String hint,
+      String value,
       TextEditingController controller, {
         TextInputType keyboardType = TextInputType.text,
         int maxLines = 1,
+        required bool isEnabled,
       }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
@@ -185,14 +200,30 @@ class _BusinessEditState extends State<BusinessEdit> {
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
-        enabled: isEdit,
+        enabled: isEnabled,
         decoration: InputDecoration(
-
           labelText: label,
-          hintText: hint,
+          labelStyle: const TextStyle(
+              color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 15),
+          hintText: value,
+          hintStyle: const TextStyle(color: Colors.blue,fontSize: 20),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(20),
+            borderSide:  BorderSide(color:Colors.blue),
           ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(7),
+            borderSide: const BorderSide(color: Colors.blue),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Colors.black),
+          ),
+          filled: true,
+          // fillColor: isEnabled ? Colors.blue.shade100 : Colors.blue.shade50,
+        ),
+        style: TextStyle(
+          color: isEnabled ? Colors.black : Colors.black87,
         ),
       ),
     );

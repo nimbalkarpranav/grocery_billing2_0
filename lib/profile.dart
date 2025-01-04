@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
-import 'drawer/drawer.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -13,109 +13,84 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  String userName = "";
-  String email = "";
-  String phone = "";
-  String address = "";
-  String pin = "" ;
-  String profileImagePath = "";
-
-  // Controllers for editing
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _pinController = TextEditingController();
-
   bool isEdit = false;
+  String? _imagePath;
+  TextEditingController pName = TextEditingController();
+  TextEditingController pEmail = TextEditingController();
+  TextEditingController pPhone = TextEditingController();
+  TextEditingController pAddress = TextEditingController();
+  TextEditingController pPin = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadSavedData();
   }
 
-  Future<void> _saveUserData() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userName', userName);
-      await prefs.setString('email', email);
-      await prefs.setString('phone', phone);
-      await prefs.setString('address', address);
-      await prefs.setString('pin', pin);
-      await prefs.setString('profileImagePath', profileImagePath);
-      debugPrint("Data saved successfully");
-    } catch (e) {
-      debugPrint("Error saving data: $e");
-    }
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('Person_Img', _imagePath ?? '');
+    await prefs.setString('Person_name', pName.text);
+    await prefs.setString('Person_Email', pEmail.text);
+    await prefs.setString('Person_phone', pPhone.text);
+    await prefs.setString('Person_Address', pAddress.text);
+    await prefs.setString('Person_Pin', pPin.text);
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> _loadSavedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _imagePath = prefs.getString('Person_Img');
+      pName.text = prefs.getString('Person_name') ?? '';
+      pEmail.text = prefs.getString('Person_Email') ?? '';
+      pPhone.text = prefs.getString('Person_phone') ?? '';
+      pAddress.text = prefs.getString('Person_Address') ?? '';
+      pPin.text = prefs.getString('Person_Pin') ?? '';
+    });
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final directory = await getApplicationDocumentsDirectory();
+      final String newPath = '${directory.path}/${pickedFile.name}';
+      final File file = File(pickedFile.path);
+      await file.copy(newPath);
+
       setState(() {
-        userName = prefs.getString('userName') ?? "";
-        email = prefs.getString('email') ?? "";
-        phone = prefs.getString('phone') ?? "";
-        address = prefs.getString('address') ?? "";
-        pin = prefs.getString('pin') ?? "";
-        profileImagePath = prefs.getString('profileImagePath') ?? "";
+        _imagePath = newPath;
       });
-      debugPrint("Data loaded successfully");
-    } catch (e) {
-      debugPrint("Error loading data: $e");
+      if (isEdit) _saveData();
     }
   }
 
   void _enableEdit() {
     setState(() {
       isEdit = true;
-      _nameController.text = userName;
-      _emailController.text = email;
-      _phoneController.text = phone;
-      _addressController.text = address;
-      _pinController.text = pin;
     });
   }
 
   void _saveChanges() {
     setState(() {
-      userName = _nameController.text.trim();
-      email = _emailController.text.trim();
-      phone = _phoneController.text.trim();
-      address = _addressController.text.trim();
-      pin = _pinController.text.trim();
       isEdit = false;
     });
-    _saveUserData();
+    _saveData();
   }
 
   void _discardChanges() {
     setState(() {
       isEdit = false;
     });
-  }
-
-  Future<void> _changeImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
-    await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        profileImagePath = pickedFile.path;
-      });
-      _saveUserData();
-    }
+    _loadSavedData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: drawerPage(),
       appBar: AppBar(
         title: const Text("Profile Page"),
-        backgroundColor: Colors.blueAccent,
         centerTitle: true,
         actions: isEdit
             ? [
@@ -137,56 +112,35 @@ class _ProfileState extends State<Profile> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(18.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-
-                child: CircleAvatar(
-                  backgroundColor: Colors.blueAccent,
-                  maxRadius: 50,
-                  backgroundImage: profileImagePath.isNotEmpty
-                      ? FileImage(File(profileImagePath))
-                      : const AssetImage('assetsimage/propic.jpeg')
-                  as ImageProvider,
+              Center(
+                child: GestureDetector(
+                  onTap: isEdit ? _pickImage : null,
+                  child: CircleAvatar(
+                    radius: 70,
+                    backgroundColor: Colors.blueAccent,
+                    backgroundImage: _imagePath != null &&
+                        File(_imagePath!).existsSync()
+                        ? FileImage(File(_imagePath!))
+                        : const AssetImage('assetsimage/propic.jpeg')
+                    as ImageProvider,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
               _buildTextField(
-                "Name",
-                userName,
-                _nameController,
-                isEnabled: isEdit,
-              ),
+                  "Name", "Enter your name", pName, isEnabled: isEdit),
               _buildTextField(
-                "Email",
-                email,
-                _emailController,
-                keyboardType: TextInputType.emailAddress,
-                isEnabled: isEdit,
-              ),
-              _buildTextField(
-                "Phone",
-                phone,
-                _phoneController,
-                keyboardType: TextInputType.phone,
-                isEnabled: isEdit,
-              ),
-              _buildTextField(
-                "Address",
-                address,
-                _addressController,
-                maxLines: 2,
-                isEnabled: isEdit,
-              ),
-              _buildTextField(
-                "New Pin",
-                pin,
-                _pinController,
-                maxLines: 2,
-                isEnabled: isEdit,
-              ),
+                  "Email", "Enter your email", pEmail, isEnabled: isEdit),
+              _buildTextField("Phone", "Enter phone number", pPhone,
+                  keyboardType: TextInputType.phone, isEnabled: isEdit),
+              _buildTextField("Address", "Enter your address", pAddress,
+                  isEnabled: isEdit),
+              _buildTextField("New Pin", "Enter pin code", pPin,
+                  maxLines: 1, isEnabled: isEdit),
             ],
           ),
         ),
@@ -194,39 +148,41 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget _buildTextField(String label, String value, TextEditingController controller,
-      {TextInputType keyboardType = TextInputType.text,
+  Widget _buildTextField(
+      String label,
+      String value,
+      TextEditingController controller, {
+        TextInputType keyboardType = TextInputType.text,
         int maxLines = 1,
-        required bool isEnabled}) {
+        required bool isEnabled,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
       child: TextField(
+        style:  TextStyle(
+      color: isEnabled ? Colors.black : Colors.black87,
+      ),
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
         enabled: isEnabled,
         decoration: InputDecoration(
+
           labelText: label,
-          labelStyle: const TextStyle(
-              color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 20),
           hintText: value,
-          hintStyle: const TextStyle(color: Colors.blue),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(20),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.grey),
-          ),
-          focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(7),
             borderSide: const BorderSide(color: Colors.blue),
           ),
-          filled: true,
-          // fillColor: isEnabled ? Colors.blue.shade100 : Colors.blue.shade50,
-        ),
-        style: TextStyle(
-          color: isEnabled ? Colors.black : Colors.black87,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Colors.black),
+
+          ),
+
         ),
       ),
     );
