@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,6 +30,17 @@ class _BusinessEditState extends State<BusinessEdit> {
     _loadSavedData();
   }
 
+
+
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('BusinessEdit_image', _imagePath ?? '');
+    await prefs.setString('BusinessEdit_name', bName.text);
+    await prefs.setString('BusinessEdit_email', bEmail.text);
+    await prefs.setString('BusinessEdit_phone', bPhone.text);
+    await prefs.setString('BusinessEdit_address', bAddress.text);
+    await prefs.setString('BusinessEdit_description', bDescription.text);
+  }
   Future<void> _loadSavedData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -43,16 +53,6 @@ class _BusinessEditState extends State<BusinessEdit> {
     });
   }
 
-  Future<void> _saveData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('BusinessEdit_image', _imagePath ?? '');
-    await prefs.setString('BusinessEdit_name', bName.text);
-    await prefs.setString('BusinessEdit_email', bEmail.text);
-    await prefs.setString('BusinessEdit_phone', bPhone.text);
-    await prefs.setString('BusinessEdit_address', bAddress.text);
-    await prefs.setString('BusinessEdit_description', bDescription.text);
-  }
-
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -61,7 +61,6 @@ class _BusinessEditState extends State<BusinessEdit> {
       final directory = await getApplicationDocumentsDirectory();
       final String newPath = '${directory.path}/${pickedFile.name}';
       final File file = File(pickedFile.path);
-
       await file.copy(newPath);
 
       setState(() {

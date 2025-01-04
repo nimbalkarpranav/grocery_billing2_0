@@ -17,6 +17,7 @@ class _ProfileState extends State<Profile> {
   String email = "";
   String phone = "";
   String address = "";
+  String pin = "" ;
   String profileImagePath = "";
 
   // Controllers for editing
@@ -24,12 +25,13 @@ class _ProfileState extends State<Profile> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _pinController = TextEditingController();
 
   bool isEdit = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     _loadUserData();
   }
 
@@ -37,10 +39,10 @@ class _ProfileState extends State<Profile> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userName', userName);
-      print(userName);
       await prefs.setString('email', email);
       await prefs.setString('phone', phone);
       await prefs.setString('address', address);
+      await prefs.setString('pin', pin);
       await prefs.setString('profileImagePath', profileImagePath);
       debugPrint("Data saved successfully");
     } catch (e) {
@@ -56,6 +58,7 @@ class _ProfileState extends State<Profile> {
         email = prefs.getString('email') ?? "";
         phone = prefs.getString('phone') ?? "";
         address = prefs.getString('address') ?? "";
+        pin = prefs.getString('pin') ?? "";
         profileImagePath = prefs.getString('profileImagePath') ?? "";
       });
       debugPrint("Data loaded successfully");
@@ -71,6 +74,7 @@ class _ProfileState extends State<Profile> {
       _emailController.text = email;
       _phoneController.text = phone;
       _addressController.text = address;
+      _pinController.text = pin;
     });
   }
 
@@ -80,6 +84,7 @@ class _ProfileState extends State<Profile> {
       email = _emailController.text.trim();
       phone = _phoneController.text.trim();
       address = _addressController.text.trim();
+      pin = _pinController.text.trim();
       isEdit = false;
     });
     _saveUserData();
@@ -137,7 +142,7 @@ class _ProfileState extends State<Profile> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: _changeImage,
+
                 child: CircleAvatar(
                   backgroundColor: Colors.blueAccent,
                   maxRadius: 50,
@@ -175,6 +180,13 @@ class _ProfileState extends State<Profile> {
                 maxLines: 2,
                 isEnabled: isEdit,
               ),
+              _buildTextField(
+                "New Pin",
+                pin,
+                _pinController,
+                maxLines: 2,
+                isEnabled: isEdit,
+              ),
             ],
           ),
         ),
@@ -203,7 +215,7 @@ class _ProfileState extends State<Profile> {
             borderRadius: BorderRadius.circular(7),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Colors.grey),
           ),
           focusedBorder: OutlineInputBorder(
