@@ -95,8 +95,9 @@ class _BusinessEditState extends State<BusinessEdit> {
     return Scaffold(
       drawer: drawerPage(),
       appBar: AppBar(
-        title: const Text("Profile Page"),
+        title: const Text("Business Profile"),
         centerTitle: true,
+        backgroundColor: Colors.blueAccent,
         actions: isEdit
             ? [
           IconButton(
