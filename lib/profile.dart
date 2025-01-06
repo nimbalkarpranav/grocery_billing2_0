@@ -163,8 +163,8 @@ class _ProfileState extends State<Profile> {
       padding: const EdgeInsets.only(bottom: 20.0),
       child: TextField(
         style:  TextStyle(
-      color: isEnabled ? Colors.black : Colors.black87,
-      ),
+          color: isEnabled ? Colors.black : Colors.black87,
+        ),
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,

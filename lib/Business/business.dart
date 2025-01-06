@@ -162,11 +162,11 @@ class _BusinessEditState extends State<BusinessEdit> {
                   bEmail,
                   isEnabled: isEdit),
               _buildTextField(
-                "Phone",
-                "Enter phone number",
-                bPhone,
-                keyboardType: TextInputType.phone,
-                isEnabled:isEdit
+                  "Phone",
+                  "Enter phone number",
+                  bPhone,
+                  keyboardType: TextInputType.phone,
+                  isEnabled:isEdit
               ),
               _buildTextField("Address",
                   "Enter Business address",
@@ -174,11 +174,11 @@ class _BusinessEditState extends State<BusinessEdit> {
                   isEnabled:isEdit
               ),
               _buildTextField(
-                "Description",
-                "Enter Business description",
-                bDescription,
-                maxLines: 3,
-                isEnabled:isEdit
+                  "Description",
+                  "Enter Business description",
+                  bDescription,
+                  maxLines: 3,
+                  isEnabled:isEdit
               ),
             ],
           ),
