@@ -7,6 +7,7 @@ import '../Home_screen/EditPinDB/editpin.dart';
 import '../Product/productlist.dart';
 import '../Product/addproduct.dart';
 
+import '../pause/bill.dart';
 import '../profile.dart';
 
 class drawerPage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _drawerPageState extends State<drawerPage> {
   Future<void> logout() async {
     try {
       // Clear user and PIN data
-      // await dbHelper.deleteAllUsers();
+     //  await dbHelper.deleteAllUsers();
       print('All user data deleted');
       await dbHelper.deletePin();
       print('PIN deleted');
@@ -69,6 +70,17 @@ class _drawerPageState extends State<drawerPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HomePage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.dashboard, color: Colors.blueAccent),
+            title: Text('Billing paus ', style: TextStyle(fontSize: 18)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => InvoicePauseScreen()),
               );
             },
           ),

@@ -166,7 +166,7 @@ class _ProductListPageState extends State<ProductListPage> {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('MRP: ${product['price']}',
+                    Text('MRP: ${product['sellPrice']}',
                         style: TextStyle(fontSize: 10)),
                   ],
                 ),
@@ -174,7 +174,7 @@ class _ProductListPageState extends State<ProductListPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Sell Price: ${product['sellPrice']}',
+                      'Sell Price: ${product['price']}',
                       style: TextStyle(fontSize: 10),
                     ),
                     IconButton(

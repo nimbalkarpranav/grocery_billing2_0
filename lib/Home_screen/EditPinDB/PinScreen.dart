@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../home_screen.dart';
 import 'editpin.dart';
 
-
 class PinScreen extends StatefulWidget {
   const PinScreen({super.key});
 
@@ -69,22 +68,33 @@ class _PinScreenState extends State<PinScreen> {
           } else if (pinController.text.length < 4) {
             pinController.text += value;
           }
-          setState(() {}); // Refresh UI after tap
+          setState(() {});
         },
         child: Container(
-          margin: EdgeInsets.all(4.0),
+          margin: EdgeInsets.all(8.0),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Colors.purpleAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                offset: Offset(0, 4),
+                blurRadius: 6,
+              ),
+            ],
           ),
-          height: 60,
+          height: 70,
           child: Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
+              color: Colors.white,
             ),
           ),
         ),
@@ -135,21 +145,57 @@ class _PinScreenState extends State<PinScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Enter PIN", style: TextStyle(fontSize: 24)),
+              Text(
+                "Enter PIN",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
               SizedBox(height: 20),
               TextField(
                 controller: pinController,
                 obscureText: true,
                 maxLength: 4,
-                decoration: InputDecoration(hintText: '----'),
+                decoration: InputDecoration(
+                  hintText: '----',
+                  hintStyle: TextStyle(fontSize: 24, color: Colors.grey),
+                  counterText: '',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.blue.shade50,
+                ),
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
               ),
               SizedBox(height: 20),
-              buildKeyboard(), // This is where the custom keyboard buttons are shown
+              buildKeyboard(), // Custom keyboard buttons
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: validatePin,
-                child: Text("Enter"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent, // Button color
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 30),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 5,
+                ),
+                child: Text(
+                  "Enter",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),

@@ -83,23 +83,44 @@ class _AddProductPageState extends State<AddProductPage> {
                 validator: (value) =>
                 value!.isEmpty ? 'Enter Product Name' : null,
               ),
+              SizedBox(height: 10,),
+              _buildTextField(
+                controller: sellPriceController,
+                labelText: 'MRP Price',
+                hintText: 'Enter the selling price',
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value!.isEmpty) return 'Enter Sell Price';
+                  final sellPrice = double.tryParse(value);
+                  final price = double.tryParse(priceController.text);
+
+                  if (sellPrice == null || sellPrice <= 0) {
+                    return 'Enter a valid Sell Price';
+                  }
+
+                  // Ensure Sell Price is greater than or equal to Price
+                  if (price != null && sellPrice < price) {
+                    return '';
+                  }
+
+                  return null;
+                },
+              ),
               SizedBox(height: 10),
               _buildTextField(
                 controller: priceController,
-                labelText: 'Price',
+                labelText: 'sell Price',
                 hintText: 'Enter the price',
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter Price' : null,
+                validator: (value) {
+                  if (value!.isEmpty) return 'Enter Price';
+                  final price = double.tryParse(value);
+                  if (price == null || price <= 0) return 'Enter a valid Price';
+                  return null;
+                },
               ),
               SizedBox(height: 10),
-              _buildTextField(
-                controller: sellPriceController,
-                labelText: 'Sell Price',
-                hintText: 'Enter the selling price',
-                keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty ? 'Enter Sell Price' : null,
-              ),
+
               SizedBox(height: 10),
               Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
@@ -126,7 +147,8 @@ class _AddProductPageState extends State<AddProductPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        validator: (value) => value == null ? 'Select a Category' : null,
+                        validator: (value) =>
+                        value == null ? 'Select a Category' : null,
                       ),
                     ),
                     SizedBox(width: 10),
@@ -136,7 +158,8 @@ class _AddProductPageState extends State<AddProductPage> {
                         onPressed: () async {
                           await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => AddCategoryPage()),
+                            MaterialPageRoute(
+                                builder: (context) => AddCategoryPage()),
                           );
                           fetchCategories(); // Refresh categories
                         },
@@ -152,8 +175,6 @@ class _AddProductPageState extends State<AddProductPage> {
                   ],
                 ),
               ),
-
-
               SizedBox(height: 10),
               _buildTextField(
                 controller: descriptionController,
@@ -162,20 +183,6 @@ class _AddProductPageState extends State<AddProductPage> {
                 maxLines: 3,
               ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => saveProduct(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'SAVE PRODUCT',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
             ],
           ),
         ),
