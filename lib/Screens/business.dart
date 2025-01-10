@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../DataBase/database.dart';
 import '../drawer/drawer.dart';
 
 
@@ -27,31 +27,47 @@ class _BusinessEditState extends State<BusinessEdit> {
   @override
   void initState() {
     super.initState();
-    _loadSavedData();
+    _loadBusinessData();
   }
 
+  Future<void> _saveBusinessData() async {
+    final businessData = {
+      'name': bName.text,
+      'email': bEmail.text,
+      'phone': bPhone.text,
+      'address': bAddress.text,
+      'description': bDescription.text,
+    };
 
+    if (isEdit) {
+      await DBHelper.instance.updateBusiness({
+        ...businessData,
+        'id': 1, // Assuming only one business record for simplicity
+      });
+    } else {
+      await DBHelper.instance.insertBusiness(businessData);
+    }
 
-  Future<void> _saveData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('BusinessEdit_image', _imagePath ?? '');
-    await prefs.setString('BusinessEdit_name', bName.text);
-    await prefs.setString('BusinessEdit_email', bEmail.text);
-    await prefs.setString('BusinessEdit_phone', bPhone.text);
-    await prefs.setString('BusinessEdit_address', bAddress.text);
-    await prefs.setString('BusinessEdit_description', bDescription.text);
-  }
-  Future<void> _loadSavedData() async {
-    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _imagePath = prefs.getString('BusinessEdit_image');
-      bName.text = prefs.getString('BusinessEdit_name') ?? '';
-      bEmail.text = prefs.getString('BusinessEdit_email') ?? '';
-      bPhone.text = prefs.getString('BusinessEdit_phone') ?? '';
-      bAddress.text = prefs.getString('BusinessEdit_address') ?? '';
-      bDescription.text = prefs.getString('BusinessEdit_description') ?? '';
+      isEdit = false;
     });
   }
+
+  Future<void> _loadBusinessData() async {
+    final businesses = await DBHelper.instance.fetchBusinesses();
+
+    if (businesses.isNotEmpty) {
+      final business = businesses.first;
+      setState(() {
+        bName.text = business['name'] ?? '';
+        bEmail.text = business['email'] ?? '';
+        bPhone.text = business['phone'] ?? '';
+        bAddress.text = business['address'] ?? '';
+        bDescription.text = business['description'] ?? '';
+      });
+    }
+  }
+
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -66,7 +82,6 @@ class _BusinessEditState extends State<BusinessEdit> {
       setState(() {
         _imagePath = newPath;
       });
-      if (isEdit) _saveData();
     }
   }
 
@@ -76,18 +91,11 @@ class _BusinessEditState extends State<BusinessEdit> {
     });
   }
 
-  void _saveChanges() {
-    setState(() {
-      isEdit = false;
-    });
-    _saveData();
-  }
-
   void _discardChanges() {
     setState(() {
       isEdit = false;
     });
-    _loadSavedData();
+    _loadBusinessData();
   }
 
   @override
@@ -101,7 +109,7 @@ class _BusinessEditState extends State<BusinessEdit> {
         actions: isEdit
             ? [
           IconButton(
-            onPressed: _saveChanges,
+            onPressed: _saveBusinessData,
             icon: const Icon(Icons.save),
           ),
           IconButton(
@@ -151,35 +159,17 @@ class _BusinessEditState extends State<BusinessEdit> {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildTextField(
-                  "Name",
-                  "Enter Business name",
-                  bName,
+              _buildTextField("Name", "Enter Business name", bName,
                   isEnabled: isEdit),
-
-              _buildTextField("Email",
-                  "Enter Business email",
-                  bEmail,
+              _buildTextField("Email", "Enter Business email", bEmail,
                   isEnabled: isEdit),
-              _buildTextField(
-                  "Phone",
-                  "Enter phone number",
-                  bPhone,
-                  keyboardType: TextInputType.phone,
-                  isEnabled:isEdit
-              ),
-              _buildTextField("Address",
-                  "Enter Business address",
-                  bAddress,
-                  isEnabled:isEdit
-              ),
-              _buildTextField(
-                  "Description",
-                  "Enter Business description",
+              _buildTextField("Phone", "Enter phone number", bPhone,
+                  keyboardType: TextInputType.phone, isEnabled: isEdit),
+              _buildTextField("Address", "Enter Business address", bAddress,
+                  isEnabled: isEdit),
+              _buildTextField("Description", "Enter Business description",
                   bDescription,
-                  maxLines: 3,
-                  isEnabled:isEdit
-              ),
+                  maxLines: 3, isEnabled: isEdit),
             ],
           ),
         ),
@@ -205,12 +195,14 @@ class _BusinessEditState extends State<BusinessEdit> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(
-              color: Colors.blueAccent, fontWeight: FontWeight.bold,fontSize: 15),
+              color: Colors.blueAccent,
+              fontWeight: FontWeight.bold,
+              fontSize: 15),
           hintText: value,
-          hintStyle: const TextStyle(color: Colors.blue,fontSize: 20),
+          hintStyle: const TextStyle(color: Colors.blue, fontSize: 20),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
-            borderSide:  BorderSide(color:Colors.blue),
+            borderSide: BorderSide(color: Colors.blue),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(7),
@@ -221,7 +213,6 @@ class _BusinessEditState extends State<BusinessEdit> {
             borderSide: const BorderSide(color: Colors.black),
           ),
           filled: true,
-          // fillColor: isEnabled ? Colors.blue.shade100 : Colors.blue.shade50,
         ),
         style: TextStyle(
           color: isEnabled ? Colors.black : Colors.black87,

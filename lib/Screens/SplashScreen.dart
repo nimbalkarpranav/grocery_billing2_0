@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (isLoggedIn) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PinScreen()), // Or HomePage
+          MaterialPageRoute(builder: (context) => PinScreen(savedPin: '',)), // Or HomePage
         );
       } else {
         Navigator.pushReplacement(

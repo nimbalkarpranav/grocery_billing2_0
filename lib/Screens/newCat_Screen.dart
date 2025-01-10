@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'DataBase/database.dart';
+import '../DataBase/database.dart';
 
 class AddCategoryPage extends StatelessWidget {
   final TextEditingController categoryController = TextEditingController();

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/Screens/business.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'PinScreen.dart';
-import 'editpin.dart'; // Or any next screen after login
+import 'editpin.dart';
+import 'home_screen.dart'; // Or any next screen after login
 
 class LoginPage extends StatefulWidget {
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -12,16 +15,42 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoginMode = true;
+  void navigateAfterLogin() async {
+    bool firstLogin = await DatabaseHelper.instance.isFirstLogin();
+    if (firstLogin) {
+      await DatabaseHelper.instance. setFirstLoginCompleted();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => PinScreen(savedPin: "1234")),
+      );
+
+    }
+  }
 
   void loginOrRegister() async {
-    String username = usernameController.text;
-    String password = passwordController.text;
+    String username = usernameController.text.trim();
+    String password = passwordController.text.trim();
+    if(username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please Fill Up All Fields"),
+          )
+      );
 
-    if (username.isEmpty || password.isEmpty) {
-      _showDialog('Please fill in both fields');
-      return;
+
     }
+     else {
+      // Register new user
+      await DatabaseHelper.instance.registerUser(username, password);
+      _showDialog('User registered successfully. Please login.');
+      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context,) => BusinessEdit(),));
 
+    }
     if (isLoginMode) {
       // Attempt login
       var user = await DatabaseHelper.instance.loginUser(username, password);
@@ -33,16 +62,16 @@ class _LoginPageState extends State<LoginPage> {
         // Navigate to PIN screen or HomePage
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PinScreen()), // or HomePage()
+          MaterialPageRoute(builder: (context) => PinScreen(savedPin: '1234',)), // or HomePage()
         );
       } else {
         _showDialog('Invalid credentials');
       }
-    } else {
-      // Register new user
-      await DatabaseHelper.instance.registerUser(username, password);
-      _showDialog('User registered successfully. Please login.');
     }
+
+
+
+
   }
 
   void _showDialog(String message) {
@@ -64,7 +93,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isLoginMode ? 'Login' : 'Register'),
+        title: Text(isLoginMode ? 'Login Page' : 'Register Page',style: TextStyle(color: Colors.white),),
+        centerTitle: true ,
         backgroundColor: Colors.blueAccent,
         elevation: 0,
       ),

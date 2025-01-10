@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/drawer/drawer.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../DataBase/database.dart';
+import 'PinScreen.dart'; // Your PIN screen
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -25,29 +25,42 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
-    _loadSavedData();
+    _loadProfileFromDB();
   }
 
-  Future<void> _saveData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('Person_Img', _imagePath ?? '');
-    await prefs.setString('Person_name', pName.text);
-    await prefs.setString('Person_Email', pEmail.text);
-    await prefs.setString('Person_phone', pPhone.text);
-    await prefs.setString('Person_Address', pAddress.text);
-    await prefs.setString('Person_Pin', pPin.text);
+  Future<void> _loadProfileFromDB() async {
+    final profile = await DBHelper.instance.fetchProfile();
+    if (profile != null) {
+      setState(() {
+        pName.text = profile['name'];
+        pEmail.text = profile['email'];
+        pPhone.text = profile['phone'];
+        pAddress.text = profile['address'];
+        pPin.text = profile['pin'];
+        _imagePath = profile['imagePath'];
+      });
+    }
   }
 
-  Future<void> _loadSavedData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _imagePath = prefs.getString('Person_Img');
-      pName.text = prefs.getString('Person_name') ?? '';
-      pEmail.text = prefs.getString('Person_Email') ?? '';
-      pPhone.text = prefs.getString('Person_phone') ?? '';
-      pAddress.text = prefs.getString('Person_Address') ?? '';
-      pPin.text = prefs.getString('Person_Pin') ?? '';
-    });
+  Future<void> _saveProfileToDB() async {
+    final profile = {
+      'name': pName.text,
+      'email': pEmail.text,
+      'phone': pPhone.text,
+      'address': pAddress.text,
+      'pin': pPin.text,
+      'imagePath': _imagePath,
+    };
+
+    final existingProfile = await DBHelper.instance.fetchProfile();
+    if (existingProfile == null) {
+      await DBHelper.instance.insertProfile(profile);
+    } else {
+      await DBHelper.instance.updateProfile({
+        ...profile,
+        'id': existingProfile['id'],
+      });
+    }
   }
 
   Future<void> _pickImage() async {
@@ -63,7 +76,6 @@ class _ProfileState extends State<Profile> {
       setState(() {
         _imagePath = newPath;
       });
-      if (isEdit) _saveData();
     }
   }
 
@@ -73,24 +85,40 @@ class _ProfileState extends State<Profile> {
     });
   }
 
-  void _saveChanges() {
+  void _saveChanges() async {
+    // Debugging to ensure save action happens
+    print("Saving changes...");
+    await _saveProfileToDB();
     setState(() {
       isEdit = false;
     });
-    _saveData();
+
+    // Debugging PIN change
+    if (pPin.text.isNotEmpty) {
+      print("New PIN: ${pPin.text}");
+
+      // If PIN has been changed, navigate to the PIN screen with the updated PIN
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PinScreen(savedPin: pPin.text), // Pass updated PIN
+        ),
+      );
+    } else {
+      print("No PIN updated, staying on the profile page.");
+    }
   }
 
   void _discardChanges() {
     setState(() {
       isEdit = false;
     });
-    _loadSavedData();
+    _loadProfileFromDB();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: drawerPage(),
       appBar: AppBar(
         title: const Text("Profile Page"),
         centerTitle: true,
@@ -120,17 +148,45 @@ class _ProfileState extends State<Profile> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: GestureDetector(
-                  onTap: isEdit ? _pickImage : null,
-                  child: CircleAvatar(
-                    radius: 70,
-                    backgroundColor: Colors.blueAccent,
-                    backgroundImage: _imagePath != null &&
-                        File(_imagePath!).existsSync()
-                        ? FileImage(File(_imagePath!))
-                        : const AssetImage('assetsimage/propic.jpeg')
-                    as ImageProvider,
-                  ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 70,
+                      backgroundColor: Colors.blueAccent,
+                      backgroundImage: _imagePath != null &&
+                          File(_imagePath!).existsSync()
+                          ? FileImage(File(_imagePath!))
+                          : const AssetImage('assetsimage/propic.jpeg')
+                      as ImageProvider,
+                    ),
+                    if (isEdit)
+                      Positioned(
+                        bottom: 10,
+                        right: 16,
+                        child: GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -142,8 +198,8 @@ class _ProfileState extends State<Profile> {
                   keyboardType: TextInputType.phone, isEnabled: isEdit),
               _buildTextField("Address", "Enter your address", pAddress,
                   isEnabled: isEdit),
-              _buildTextField("New Pin", "Enter pin code", pPin,
-                  maxLines: 1, isEnabled: isEdit),
+              _buildTextField("Change pin", "Enter your PIN", pPin,
+                  keyboardType: TextInputType.number, isEnabled: isEdit),
             ],
           ),
         ),
@@ -152,27 +208,20 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _buildTextField(
-      String label,
-      String value,
-      TextEditingController controller, {
-        TextInputType keyboardType = TextInputType.text,
+      String label, String hint, TextEditingController controller,
+      {TextInputType keyboardType = TextInputType.text,
         int maxLines = 1,
-        required bool isEnabled,
-      }) {
+        required bool isEnabled}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
       child: TextField(
-        style:  TextStyle(
-          color: isEnabled ? Colors.black : Colors.black87,
-        ),
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
         enabled: isEnabled,
         decoration: InputDecoration(
-
           labelText: label,
-          hintText: value,
+          hintText: hint,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -183,9 +232,7 @@ class _ProfileState extends State<Profile> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Colors.black),
-
           ),
-
         ),
       ),
     );

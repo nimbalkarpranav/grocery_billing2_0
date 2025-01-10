@@ -4,7 +4,7 @@ import 'package:grocery_billing2_0/drawer/drawer.dart';
 import '../DataBase/database.dart';
 import '../Payment Details Page/PaymentDetailsADD.dart';
 import 'addproduct.dart';
-import '../profile.dart';
+import '../Screens/profileScreen.dart';
 import 'editeProduct.dart';
 
 class ProductListPage extends StatefulWidget {

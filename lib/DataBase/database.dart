@@ -25,6 +25,17 @@ class DBHelper {
   }
 
   Future _createDB(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE business (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        address TEXT NOT NULL,
+        description TEXT,
+        imagePath TEXT
+      )
+    ''');
     // Products Table
     await db.execute('''CREATE TABLE products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +68,79 @@ class DBHelper {
       date TEXT NOT NULL,
       FOREIGN KEY (customer_id) REFERENCES customers (id)
     )''');
+    await db.execute('''CREATE TABLE profile (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    address TEXT NOT NULL,
+    pin TEXT NOT NULL,
+    imagePath TEXT
+  )''');
   }
+  Future<int> insertBusiness(Map<String, dynamic> business) async {
+    final db = await instance.database;
+    return await db.insert('business', business);
+  }
+  Future<List<Map<String, dynamic>>> fetchBusinesses() async {
+    final db = await instance.database;
+    return await db.query('business');
+  }
+  Future<int> updateBusiness(Map<String, dynamic> business) async {
+    final db = await instance.database;
+    return await db.update(
+      'business',
+      business,
+      where: 'id = ?',
+      whereArgs: [business['id']],
+    );
+  }
+  Future<int> deleteBusiness(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'business',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+  // Insert Profile
+  Future<int> insertProfile(Map<String, dynamic> profile) async {
+    final db = await instance.database;
+    return await db.insert('profile', profile);
+  }
+
+// Fetch Profile
+  Future<Map<String, dynamic>?> fetchProfile() async {
+    final db = await instance.database;
+    final result = await db.query('profile');
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
+  }
+
+// Update Profile
+  Future<int> updateProfile(Map<String, dynamic> profile) async {
+    final db = await instance.database;
+    return await db.update(
+      'profile',
+      profile,
+      where: 'id = ?',
+      whereArgs: [profile['id']],
+    );
+  }
+
+// Delete Profile
+  Future<int> deleteProfile(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'profile',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+
 
   // Insert Category
   Future<int> insertCategory(Map<String, dynamic> category) async {

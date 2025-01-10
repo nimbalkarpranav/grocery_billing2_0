@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'Home_screen/EditPinDB/SplashScreen.dart';
-import 'Home_screen/EditPinDB/login.dart';
-import 'Home_screen/home_screen.dart';
+import 'Screens/SplashScreen.dart';
+import 'Screens/login.dart';
+import 'Screens/home_screen.dart';
 
 void main() {
   runApp(MyApp());
