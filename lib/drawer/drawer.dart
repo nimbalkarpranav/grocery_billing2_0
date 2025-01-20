@@ -1,14 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/Screens/home_screen.dart';
 
-import '../Screens/business.dart';
-import '../Screens/editpin.dart';
 import '../Product/productlist.dart';
 import '../Product/addproduct.dart';
 
-import '../pause/bill.dart';
+import '../Screens/business.dart';
+import '../Screens/editpin.dart';
+import '../Screens/home_screen.dart';
 import '../Screens/profileScreen.dart';
+import '../pause/bill.dart';
+
 
 class drawerPage extends StatefulWidget {
   const drawerPage({super.key});
@@ -27,7 +28,7 @@ class _drawerPageState extends State<drawerPage> {
       print('All user data deleted');
       await dbHelper.deletePin();
       print('PIN deleted');
-
+   
       // Navigate to the login screen
       Navigator.pop(context); // Close the drawer
       Navigator.of(context).pushNamedAndRemoveUntil(
@@ -78,10 +79,10 @@ class _drawerPageState extends State<drawerPage> {
             title: Text('Billing paus ', style: TextStyle(fontSize: 18)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => InvoicePauseScreen()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) =>// InvoicePauseScreen()),
+              // );
             },
           ),
           ListTile(
@@ -89,10 +90,10 @@ class _drawerPageState extends State<drawerPage> {
             title: Text('Profile', style: TextStyle(fontSize: 18)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Profile()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => Profile()),
+              // );
             },
           ),
           ListTile(
@@ -102,7 +103,7 @@ class _drawerPageState extends State<drawerPage> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => BusinessEdit()),
+                MaterialPageRoute(builder: (context) => HomePage()),
               );
             },
           ),
@@ -140,5 +141,5 @@ class _drawerPageState extends State<drawerPage> {
         ],
       ),
     );
-  }
+  } 
 }

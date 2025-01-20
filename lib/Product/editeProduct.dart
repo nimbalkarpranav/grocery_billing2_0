@@ -29,7 +29,7 @@ class _EditProductPageState extends State<EditProductPage> {
   Future<void> updateProduct() async {
     if (_formKey.currentState!.validate()) {
       final updatedProduct = {
-        'id': widget.product['id'], // Keep the same ID
+        'id': widget.product['id'],
         'name': nameController.text,
         'price': double.tryParse(priceController.text) ?? 0.0,
         'sellPrice': double.tryParse(sellPriceController.text) ?? 0.0,
@@ -45,49 +45,83 @@ class _EditProductPageState extends State<EditProductPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Product'),
-
+        backgroundColor: Colors.blueAccent,
         actions: [
-          TextButton(onPressed: updateProduct,
-
-          child: Text("Save"))
+          TextButton(
+            onPressed: updateProduct,
+            child: Text(
+              "Save",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Text(
+              //   "Edit Product Details",
+              //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              // ),
+              SizedBox(height: 20),
               TextFormField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Name',
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  prefixIcon: Icon(Icons.shopping_bag),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-
-                validator: (value) =>
-                value!.isEmpty ? 'Name cannot be empty' : null,
+                validator: (value) => value!.isEmpty ? 'Name cannot be empty' : null,
               ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: priceController,
-                decoration: InputDecoration(labelText: 'Price'),
+                decoration: InputDecoration(
+                  labelText: 'Price',
+                  prefixIcon: Icon(Icons.attach_money),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty ? 'Price cannot be empty' : null,
+                validator: (value) => value!.isEmpty ? 'Price cannot be empty' : null,
               ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: sellPriceController,
-                decoration: InputDecoration(labelText: 'Sell Price'),
+                decoration: InputDecoration(
+                  labelText: 'Sell Price',
+                  prefixIcon: Icon(Icons.money_off),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty ? 'Sell Price cannot be empty' : null,
+                validator: (value) => value!.isEmpty ? 'Sell Price cannot be empty' : null,
               ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: categoryController,
-                decoration: InputDecoration(labelText: 'Category'),
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
-              SizedBox(height: 20),
-              // ElevatedButton(
-              //
-              //   child: Text('Update Product'),
+              SizedBox(height: 30),
+              // Center(
+              //   child: ElevatedButton(
+              //     onPressed: updateProduct,
+              //     style: ElevatedButton.styleFrom(
+              //       padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              //       backgroundColor: Colors.blueAccent,
+              //     ),
+              //     child: Text(
+              //       'Update Product',
+              //       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              //     ),
+              //   ),
               // ),
             ],
           ),

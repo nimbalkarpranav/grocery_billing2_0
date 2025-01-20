@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/Screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'PinScreen.dart';
@@ -29,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (isLoggedIn) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PinScreen(savedPin: '',)), // Or HomePage
+          MaterialPageRoute(builder: (context) => HomePage()), // Or HomePage
         );
       } else {
         Navigator.pushReplacement(

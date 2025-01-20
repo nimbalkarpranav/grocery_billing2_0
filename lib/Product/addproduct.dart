@@ -156,7 +156,8 @@ class _AddProductPageState extends State<AddProductPage> {
                       flex: 1,
                       child: ElevatedButton(
                         onPressed: () async {
-                          await Navigator.push(
+                          await
+                          Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => AddCategoryPage()),

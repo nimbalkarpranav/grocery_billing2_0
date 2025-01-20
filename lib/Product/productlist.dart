@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Billing_page/product_billing.dart';
 import 'package:grocery_billing2_0/drawer/drawer.dart';
@@ -167,27 +168,69 @@ class _ProductListPageState extends State<ProductListPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('MRP: ${product['sellPrice']}',
-                        style: TextStyle(fontSize: 10)),
+                        style: TextStyle(fontSize: 10,color: Colors.red)),
+                    Text('sell price: ${product['price']}',
+                        style: TextStyle(fontSize: 10,color: CupertinoColors.activeGreen),),
                   ],
+                ), trailing: PopupMenuButton<String>(
+                  onSelected: (value) {
+            if (value == 'Edit') {
+            Navigator.push(
+            context,
+            MaterialPageRoute(
+            builder: (context) => EditProductPage(product: product),
+            ),
+            ).then((result) {
+            if (result == true) {
+            fetchProducts(); // Refresh products after editing
+            }
+            });
+            } else if (value == 'Delete') {
+            deleteProduct(product['id']); // Delete product
+            }
+            },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'Edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text('Edit'),
+                    ],
+                  ),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Sell Price: ${product['price']}',
-                      style: TextStyle(fontSize: 10),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        deleteProduct(product['id']);
-                      },
-                    ),
-                  ],
+                PopupMenuItem(
+                  value: 'Delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Delete'),
+                    ],
+                  ),
                 ),
-                onTap: () {
+              ],
+            ),
+
+            // Row(
+                //   mainAxisSize: MainAxisSize.min,
+                //   children: [
+                //     Text(
+                //       'Sell Price: ${product['price']}',
+                //       style: TextStyle(fontSize: 10),
+                //     ),
+                //     IconButton(
+                //       icon: Icon(Icons.delete, color: Colors.red),
+                //       onPressed: () {
+                //         deleteProduct(product['id']);
+                //       },
+                //     ),
+                //   ],
+                // ),
+                ///onTap: () {
                   //addToCart(product); // Add product to cart
-                },
+               // },
               ),
             ),
           );

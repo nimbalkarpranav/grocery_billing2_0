@@ -1,4 +1,4 @@
-import 'package:sqflite/sqflite.dart';
+ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
@@ -26,7 +26,7 @@ class DatabaseHelper {
             username TEXT UNIQUE,
             password TEXT,
             firstLogin INTEGER DEFAULT 1
-          );
+          ); 
         ''');
         await db.execute('''
           CREATE TABLE pin(
