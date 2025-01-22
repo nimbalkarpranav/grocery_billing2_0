@@ -9,6 +9,7 @@ import '../Screens/editpin.dart';
 import '../Screens/home_screen.dart';
 import '../Screens/profileScreen.dart';
 import '../pause/bill.dart';
+import '../pause/inviocebill.dart';
 
 
 class drawerPage extends StatefulWidget {
@@ -79,10 +80,21 @@ class _drawerPageState extends State<drawerPage> {
             title: Text('Billing paus ', style: TextStyle(fontSize: 18)),
             onTap: () {
               Navigator.pop(context);
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) =>// InvoicePauseScreen()),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>InvoiceBillingPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.dashboard, color: Colors.blueAccent),
+            title: Text('Billing Invioce ', style: TextStyle(fontSize: 18)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>InvoiceListPage()),
+              );
             },
           ),
           ListTile(
