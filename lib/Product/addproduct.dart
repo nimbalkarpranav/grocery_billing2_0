@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/Product/productlist.dart';
 import '../DataBase/database.dart';
 import '../Screens/newCat_Screen.dart';
+import '../drawer/drawer.dart';
 
 class AddProductPage extends StatefulWidget {
   @override
@@ -18,11 +19,12 @@ class _AddProductPageState extends State<AddProductPage> {
   String? selectedCategory; // For the dropdown
   List<String> categories = []; // To store categories
 
-  /// Fetch categories from the database
+  /// Fetch categories from the database and add new ones at the top
   Future<void> fetchCategories() async {
     final data = await DBHelper.instance.fetchCategories();
     setState(() {
       categories = data.map((e) => e['name'] as String).toList();
+      categories = categories.reversed.toList(); // Newly added category on top
     });
   }
 
@@ -51,6 +53,7 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: Text('Add Product', style: TextStyle(fontSize: 22)),
         elevation: 4,
@@ -83,7 +86,7 @@ class _AddProductPageState extends State<AddProductPage> {
                 validator: (value) =>
                 value!.isEmpty ? 'Enter Product Name' : null,
               ),
-              SizedBox(height: 10,),
+              SizedBox(height: 10),
               _buildTextField(
                 controller: sellPriceController,
                 labelText: 'MRP Price',
@@ -100,7 +103,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
                   // Ensure Sell Price is greater than or equal to Price
                   if (price != null && sellPrice < price) {
-                    return '';
+                    return 'Sell Price should be greater than or equal to Price';
                   }
 
                   return null;
@@ -109,7 +112,7 @@ class _AddProductPageState extends State<AddProductPage> {
               SizedBox(height: 10),
               _buildTextField(
                 controller: priceController,
-                labelText: 'sell Price',
+                labelText: 'Selling Price',
                 hintText: 'Enter the price',
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -121,7 +124,6 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
               SizedBox(height: 10),
 
-              SizedBox(height: 10),
               Container(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: Row(
@@ -156,13 +158,16 @@ class _AddProductPageState extends State<AddProductPage> {
                       flex: 1,
                       child: ElevatedButton(
                         onPressed: () async {
-                          await
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => AddCategoryPage()),
                           );
-                          fetchCategories(); // Refresh categories
+                          await fetchCategories(); // Refresh categories after adding new one
+                          setState(() {
+                            selectedCategory =
+                            categories.isNotEmpty ? categories.first : null;
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.all(12),

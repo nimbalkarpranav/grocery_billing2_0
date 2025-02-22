@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 import 'PinScreen.dart';
 
 class Profile extends StatefulWidget {
@@ -109,10 +110,10 @@ class _ProfileState extends State<Profile> {
       margin: EdgeInsets.symmetric(vertical: 8),
       padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white70,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.3), blurRadius: 6, spreadRadius: 2),
+          BoxShadow(color: Colors.blueAccent.withOpacity(0.3), blurRadius: 6, spreadRadius: 2),
         ],
       ),
       child: TextField(
@@ -131,67 +132,70 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       backgroundColor: Colors.blue[50],
       appBar: AppBar(
-        title: Text("Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text("Profile", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
-            icon: Icon(isEdit ? Icons.save : Icons.edit),
+            icon: Icon(isEdit ? Icons.save : Icons.edit,),color: Colors.white,
             onPressed: isEdit ? _saveProfile : () => setState(() => isEdit = true),
           ),
           if (isEdit)
             IconButton(
-              icon: Icon(Icons.cancel),
+              icon: Icon(Icons.cancel),color: Colors.white,
               onPressed: () => setState(() => isEdit = false),
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: isEdit ? _pickImage : null,
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  CircleAvatar(
-                    radius: 70,
-                    backgroundColor: Colors.grey[300],
-                    backgroundImage: _imagePath != null && File(_imagePath!).existsSync()
-                        ? FileImage(File(_imagePath!))
-                        : AssetImage('assetsimage/propic.jpeg') as ImageProvider,
-                  ),
-                  if (isEdit)
-                    Container(
-                      decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                      padding: EdgeInsets.all(6),
-                      child: Icon(Icons.camera_alt, color: Colors.white, size: 24),
+      body: Container(color: Colors.blueAccent,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: isEdit ? _pickImage : null,
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 70,
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: _imagePath != null && File(_imagePath!).existsSync()
+                          ? FileImage(File(_imagePath!))
+                          : AssetImage('assetsimage/propic.jpeg') as ImageProvider,
                     ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            _buildTextField("Name", pName),
-            _buildTextField("Email", pEmail),
-            _buildTextField("Phone", pPhone, keyboardType: TextInputType.phone),
-            _buildTextField("Address", pAddress),
-            _buildTextField("PIN", pPin, keyboardType: TextInputType.number),
-            SizedBox(height: 20),
-            if (isEdit)
-              ElevatedButton(
-                onPressed: _saveProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
+                    if (isEdit)
+                      Container(
+                        decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.camera_alt, color: Colors.white70, size: 24),
+                      ),
+                  ],
                 ),
-                child: Text("Save Profile", style: TextStyle(fontSize: 18)),
               ),
-          ],
+              SizedBox(height: 20),
+              _buildTextField("Name", pName),
+              _buildTextField("Email", pEmail),
+              _buildTextField("Phone", pPhone, keyboardType: TextInputType.phone),
+              _buildTextField("Address", pAddress),
+              _buildTextField("PIN", pPin, keyboardType: TextInputType.number),
+              SizedBox(height: 20),
+              if (isEdit)
+                ElevatedButton(
+                  onPressed: _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
+                  ),
+                  child: Text("SAVE ", style: TextStyle(fontSize: 18)),
+                ),
+            ],
+          ),
         ),
       ),
     );

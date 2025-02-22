@@ -53,6 +53,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(
         title: Text('Dashboard',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
@@ -85,7 +86,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CustomerPage()), // Replace with actual page
+                  MaterialPageRoute(builder: (context) => CustomersPage()), // Replace with actual page
                 );
               },
             ),

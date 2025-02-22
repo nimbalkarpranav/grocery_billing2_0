@@ -1,22 +1,20 @@
 class Customer {
-  final int? id;
-  final String name;
-  final String phone;
-  final String email;
+  int? id; // Nullable ID for auto-increment
+  String name;
+  String phone;
+  String email;
 
   Customer({this.id, required this.name, required this.phone, required this.email});
 
-  // Convert a Customer object into a Map object
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'id': id, // SQLite me auto-increment ho jayega
       'name': name,
       'phone': phone,
       'email': email,
     };
   }
 
-  // Convert a Map object into a Customer object
   factory Customer.fromMap(Map<String, dynamic> map) {
     return Customer(
       id: map['id'],

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/DataBase/database.dart';
+import 'package:grocery_billing2_0/Screens/login.dart';
 import '../Product/productlist.dart';
 import '../Screens/business.dart';
 import '../Screens/home_screen.dart';
@@ -21,18 +22,14 @@ class _drawerPageState extends State<drawerPage> {
 
   Future<void> logout() async {
     try {
-      // Clear user and PIN data
-     //  await dbHelper.deleteAllUsers();
-      print('All user data deleted');
-      await dbHelper.deletePin();
-      print('PIN deleted');
-   
-      // Navigate to the login screen
-      Navigator.pop(context); // Close the drawer
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login', // Replace with your login route
-            (route) => false, // Clear all previous routes
-      );
+      int rowsAffected = await dbHelper.deletePin();
+      print('PIN deleted for $rowsAffected user(s)');
+
+      if (rowsAffected > 0) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      } else {
+        throw Exception("No PIN found to delete");
+      }
     } catch (e) {
       print('Error during logout: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -40,6 +37,8 @@ class _drawerPageState extends State<drawerPage> {
       );
     }
   }
+
+
 
 
 

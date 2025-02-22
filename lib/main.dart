@@ -10,7 +10,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Product Manager',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.blue,
+            centerTitle: true,
+          iconTheme: IconThemeData(color: Colors.white),
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 20)// Set drawer icon color globally
+        ),
       ),
       home: SplashScreen(),
     );

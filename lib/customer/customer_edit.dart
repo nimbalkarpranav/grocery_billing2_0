@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/drawer/drawer.dart';
 
-import 'customer_db.dart';
+import '../DataBase/database.dart';
 import 'customer_model.dart';
 
 class UpdateCustomer extends StatefulWidget {
@@ -29,14 +30,16 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
     if (nameController.text.isNotEmpty &&
         phoneController.text.isNotEmpty &&
         emailController.text.isNotEmpty) {
-      Customer updatedCustomer = Customer(
-        id: widget.customer.id,
-        name: nameController.text,
-        phone: phoneController.text,
-        email: emailController.text,
+      // Correcting the update call
+      await DBHelper.instance.updateCustomer(
+        widget.customer.id!,  // Passing ID correctly
+        {
+          'name': nameController.text,
+          'phone': phoneController.text,
+          'email': emailController.text,
+        },
       );
 
-      await cDatabaseHelper.instance.updateCustomer(updatedCustomer);
       Navigator.pop(context); // Go back to the customer list
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -45,11 +48,14 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent, // Custom AppBar color
+        backgroundColor: Colors.blueAccent,
+        // Custom AppBar color
         title: Text(
           "Update Customer",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

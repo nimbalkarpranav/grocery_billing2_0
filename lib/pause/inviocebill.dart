@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 
 class InvoiceListPage extends StatefulWidget {
   @override
@@ -36,6 +37,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        drawer: drawerPage(),
       appBar: AppBar(
         title: Text('Invoices'),
         backgroundColor: Colors.blueAccent,
@@ -123,7 +125,9 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   Widget build(BuildContext context) {
     if (_invoice == null) {
       return Scaffold(
+        drawer: drawerPage(),
         appBar: AppBar(
+
           title: Text('Invoice Details'),
           backgroundColor: Colors.blueAccent,
         ),

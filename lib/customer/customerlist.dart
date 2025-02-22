@@ -1,144 +1,163 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/drawer/drawer.dart';
+import 'package:grocery_billing2_0/customer/customerAdd.dart';
+import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 
-import 'customerAdd.dart';
-import 'customer_db.dart';
-import 'customer_edit.dart';
-import 'customer_model.dart';
-
-class CustomerList extends StatefulWidget {
-  const CustomerList({super.key});
-
+class CustomersPage extends StatefulWidget {
   @override
-  _CustomerListState createState() => _CustomerListState();
+  _CustomersPageState createState() => _CustomersPageState();
 }
 
-class _CustomerListState extends State<CustomerList> {
-  late Future<List<Customer>> _customers;
+class _CustomersPageState extends State<CustomersPage> {
+  List<Map<String, dynamic>> _customers = [];
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  int? _editingId;
 
   @override
   void initState() {
     super.initState();
-    _customers = cDatabaseHelper.instance.fetchCustomers();
+    _fetchCustomers();
   }
 
-  void _deleteCustomer(int id) async {
-    await cDatabaseHelper.instance.deleteCustomer(id);
+  Future<void> _fetchCustomers() async {
+    final data = await DBHelper.instance.fetchCustomers();
     setState(() {
-      _customers = cDatabaseHelper.instance.fetchCustomers();
+      _customers = data;
+    });
+  }
+
+  Future<void> _addOrUpdateCustomer() async {
+    final String name = _nameController.text;
+    final String phone = _phoneController.text;
+    final String email = _emailController.text;
+
+    if (name.isEmpty || phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Name and Phone are required!')),
+      );
+      return;
+    }
+
+    final customerData = {'name': name, 'phone': phone, 'email': email};
+
+    if (_editingId == null) {
+      await DBHelper.instance.insertCustomer(customerData);
+    } else {
+      await DBHelper.instance.updateCustomer(_editingId!, customerData); // Fix applied ✅
+    }
+
+    _nameController.clear();
+    _phoneController.clear();
+    _emailController.clear();
+    _editingId = null;
+    _fetchCustomers();
+  }
+
+
+  Future<void> _deleteCustomer(int id) async {
+    await DBHelper.instance.deleteCustomer(id);
+    _fetchCustomers();
+  }
+
+  void _editCustomer(Map<String, dynamic> customer) {
+    setState(() {
+      _editingId = customer['id'];
+      _nameController.text = customer['name'];
+      _phoneController.text = customer['phone'];
+      _emailController.text = customer['email'] ?? '';
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueAccent, // Custom background color
-        title: Text(
-          "Customer List",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
       drawer: drawerPage(),
-      body: FutureBuilder<List<Customer>>(
-        future: _customers,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No customers found"));
-          }
 
-          final customers = snapshot.data!;
+      appBar: AppBar(title: Text('Customers List '),
 
-          return ListView.builder(
-            itemCount: customers.length,
-            itemBuilder: (context, index) {
-              final customer = customers[index];
-              return Card(
-                elevation: 5, // Adds a shadow for the card
-                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12), // Rounded corners
-                ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(16),
-                  title: Text(
-                    customer.name,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    customer.phone,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () async {
-                          // Navigate to the update page with customer details
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => UpdateCustomer(customer: customer),
-                            ),
-                          );
-                          setState(() {
-                            _customers = cDatabaseHelper.instance.fetchCustomers();
-                          });
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // Confirm deletion
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12), // Rounded corners for dialog
-                              ),
-                              title: Text("Delete Customer"),
-                              content: Text("Are you sure you want to delete this customer?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("Cancel"),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    _deleteCustomer(customer.id!);
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("Delete"),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            color: Colors.white,
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddCustomer()),
               );
+              if (result == true) {
+                CustomersPage(); // Refresh products
+              }
             },
-          );
-        },
+          ),
+        ],
+      backgroundColor: Colors.blueAccent,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => Addcustomer(),));
-        },
-        backgroundColor: Colors.blueAccent, // Custom color for the FAB
-        child: Icon(Icons.add),
+      body: Container(color: Colors.blueAccent.shade100,
+        child: Column(
+          children: [
+            // Padding(
+            //   padding: const EdgeInsets.all(8.0),
+            //   child: Column(
+            //     children: [
+            //       TextField(
+            //         controller: _nameController,
+            //         decoration: InputDecoration(labelText: 'Name'),
+            //       ),
+            //       TextField(
+            //         controller: _phoneController,
+            //         decoration: InputDecoration(labelText: 'Phone'),
+            //       ),
+            //       TextField(
+            //         controller: _emailController,
+            //         decoration: InputDecoration(labelText: 'Email (optional)'),
+            //       ),
+            //       SizedBox(height: 10),
+            //       ElevatedButton(
+            //         onPressed: _addOrUpdateCustomer,
+            //         child: Text(_editingId == null ? 'Add Customer' : 'Update Customer'),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  itemCount: _customers.length,
+                  itemBuilder: (context, index) {
+                    final customer = _customers[index];
+                    return Card(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+
+                          title: Text(customer['name']),
+                          subtitle: Text('Phone: ${customer['phone']} \nEmail: ${customer['email'] ?? 'N/A'}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _editCustomer(customer),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteCustomer(customer['id']),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

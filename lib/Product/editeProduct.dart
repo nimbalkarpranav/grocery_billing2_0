@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 
 class EditProductPage extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -43,6 +44,7 @@ class _EditProductPageState extends State<EditProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: Text('Edit Product'),
         backgroundColor: Colors.blueAccent,

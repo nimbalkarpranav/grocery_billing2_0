@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 
 class AddPaymentDetailsPage extends StatefulWidget {
   @override
@@ -67,6 +68,7 @@ class _AddPaymentDetailsPageState extends State<AddPaymentDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: Text('Add Payment Details'),
         backgroundColor: Colors.blueAccent,

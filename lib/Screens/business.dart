@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 
 class BusinessEdit extends StatefulWidget {
   const BusinessEdit({super.key});
@@ -87,6 +88,7 @@ class _BusinessEditState extends State<BusinessEdit> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: const Text("Business Profile"),
         centerTitle: true,

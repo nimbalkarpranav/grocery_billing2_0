@@ -168,8 +168,9 @@ class DBHelper {
 
   Future<int> deletePin() async {
     final db = await database;
-    return await db.delete('pin');
+    return await db.update('users', {'pin': null}, where: 'pin IS NOT NULL');
   }
+
 
   // Clear all data (Optional utility for debugging)
   Future<void> clearAllData() async {
@@ -271,26 +272,36 @@ class DBHelper {
 
 
   // CRUD for Customers
+  //////////////////////
+  //////////////////////
+  //////////////////////
+  // Insert new customer
   Future<int> insertCustomer(Map<String, dynamic> customer) async {
     final db = await instance.database;
     return await db.insert('customers', customer);
   }
 
+
+  // Fetch all customers
   Future<List<Map<String, dynamic>>> fetchCustomers() async {
     final db = await instance.database;
     return await db.query('customers');
   }
 
-  Future<int> updateCustomer(Map<String, dynamic> customer) async {
+  // Update customer details
+  Future<int> updateCustomer(int id, Map<String, dynamic> customer) async {
     final db = await instance.database;
     return await db.update(
       'customers',
       customer,
       where: 'id = ?',
-      whereArgs: [customer['id']],
+      whereArgs: [id],
     );
   }
 
+
+
+  // Delete a customer
   Future<int> deleteCustomer(int id) async {
     final db = await instance.database;
     return await db.delete(
