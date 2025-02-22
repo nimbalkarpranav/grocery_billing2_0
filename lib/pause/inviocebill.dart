@@ -106,18 +106,18 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   @override
   void initState() {
     super.initState();
-    _fetchInvoiceDetails();
+    // _fetchInvoiceDetails();
   }
 
-  Future<void> _fetchInvoiceDetails() async {
-    final invoice = await DBHelper.instance.fetchInvoiceById(widget.invoiceId);
-   final products = await DBHelper.instance.fetchInvoiceProducts(widget.invoiceId);
-
-    setState(() {
-      _invoice = invoice;
-      _products = products;
-    });
-  }
+  // Future<void> _fetchInvoiceDetails() async {
+  //   final invoice = await DBHelper.instance.fetchInvoiceById(widget.invoiceId);
+  //  final products = await DBHelper.instance.fetchInvoiceProducts(widget.invoiceId);
+  //
+  //   setState(() {
+  //     _invoice = invoice;
+  //     _products = products;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

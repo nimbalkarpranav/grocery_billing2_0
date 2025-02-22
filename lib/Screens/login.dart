@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/Screens/business.dart';
+import 'package:grocery_billing2_0/DataBase/database.dart';
+import 'package:grocery_billing2_0/Screens/profileScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'PinScreen.dart';
-import 'editpin.dart';
 import 'home_screen.dart'; // Or any next screen after login
-
 class LoginPage extends StatefulWidget {
 
   @override
@@ -14,62 +13,94 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
   bool isLoginMode = true;
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+
+
   void navigateAfterLogin() async {
-    bool firstLogin = await DatabaseHelper.instance.isFirstLogin();
-    if (firstLogin) {
-      await DatabaseHelper.instance. setFirstLoginCompleted();
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    bool isFirstLogin = pref.getBool('isFirstLogin') ?? true;
+    bool isProfileCompleted = pref.getBool('isProfileCompleted') ?? false;
+
+    if (isFirstLogin || !isProfileCompleted) {
+      await pref.setBool('isFirstLogin', false); // First login complete mark karo
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => Profile()),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => PinScreen(savedPin: "1234")),
+        MaterialPageRoute(builder: (context) => PinScreen()),
       );
-
     }
   }
+
+
+  void checkLoginStatus() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    bool isLoggedIn = pref.getBool('isLoggedIn') ?? false;
+    bool isFirstLogin = pref.getBool('isFirstLogin') ?? true;
+
+    if (isLoggedIn) {
+      if (isFirstLogin) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()), // First login pe profile page bhej
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PinScreen()), // Baad me PIN screen pe bhej
+        );
+      }
+    }
+  }
+
 
   void loginOrRegister() async {
     String username = usernameController.text.trim();
     String password = passwordController.text.trim();
-    if(username.isEmpty || password.isEmpty) {
+
+    if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Please Fill Up All Fields"),
-          )
+        SnackBar(content: Text("Please Fill Up All Fields")),
       );
-
-
+      return;
     }
-     else {
-      // Register new user
-      await DatabaseHelper.instance.registerUser(username, password);
-      _showDialog('User registered successfully. Please login.');
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context,) => BusinessEdit(),));
 
-    }
     if (isLoginMode) {
-      // Attempt login
-      var user = await DatabaseHelper.instance.loginUser(username, password);
+      // **Login Mode**
+      var user = await DBHelper.instance.loginUser(username, password);
       if (user != null) {
-        // Save login status
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setBool('isLoggedIn', true); // Mark as logged in
-
-        // Navigate to PIN screen or HomePage
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PinScreen(savedPin: '1234',)), // or HomePage()
-        );
-      } else {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        await pref.setBool('isLoggedIn', true);
+        navigateAfterLogin(); // ✅ Fix: Navigate according to Profile Completion
+      }else {
         _showDialog('Invalid credentials');
       }
-    }
+    } else {
+      // **Register Mode**
+      bool userExists = await DBHelper.instance.userExists(username);
 
+      if (userExists) {
+        _showDialog('User already exists. Please login.');
+      } else {
+        await DBHelper.instance.registerUser(username, password);
+        _showRegistrationDialog();
+        setState(() {
+          isLoginMode = true; // Registration ke baad login mode pe wapas aayega
+        });
+      }
+    }
   }
+
+
 
   void _showDialog(String message) {
     showDialog(
@@ -85,6 +116,31 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+  void _showRegistrationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Registration Successful"),
+        content: Text("Do you want to login now?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // ❌ Close only
+            child: Text("Later"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                isLoginMode = true;
+              });
+            },
+            child: Text("Login Now", style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 
 class PinScreen extends StatefulWidget {
-  final String savedPin;
-
-  const PinScreen({Key? key, required this.savedPin}) : super(key: key);
+  const PinScreen({Key? key}) : super(key: key);
 
   @override
   State<PinScreen> createState() => _PinScreenState();
@@ -17,18 +16,32 @@ class _PinScreenState extends State<PinScreen> {
   @override
   void initState() {
     super.initState();
-    pin = widget.savedPin; // Initialize with the provided saved PIN
+    checkStoredPin();
   }
 
-  void validatePin() {
+  void checkStoredPin() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? savedPin = pref.getString('userPIN'); // ✅ Ensure correct key
+    print("Debug - Saved PIN: $savedPin");
+  }
+
+
+
+
+  void validatePin() async {
     String enteredPin = pinInputs.join();
-    if (pin != null && enteredPin == pin) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedPin = prefs.getString('userPIN'); // ✅ Correct key
+
+    print("Entered PIN: $enteredPin");
+    print("Saved PIN: $savedPin");
+
+    if (savedPin != null && enteredPin == savedPin) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else if (enteredPin.length == 4) {
-      // Clear the inputs and show an error if PIN is incorrect
       setState(() {
         pinInputs = ["", "", "", ""];
       });
@@ -48,10 +61,12 @@ class _PinScreenState extends State<PinScreen> {
     }
   }
 
+
+
   void updatePinInput(String value) {
     int index = pinInputs.indexOf("");
     if (value == "⌫") {
-      if (index == -1) index = 4; // All boxes filled, remove last digit
+      if (index == -1) index = 4; // All boxes filled   , remove last digit
       if (index > 0) pinInputs[index - 1] = "";
     } else if (index < 4) {
       pinInputs[index] = value;

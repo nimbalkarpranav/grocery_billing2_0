@@ -4,7 +4,6 @@ import 'package:grocery_billing2_0/Payment%20Details%20Page/Payment%20Details%20
 import 'package:grocery_billing2_0/drawer/drawer.dart';
 
 import '../customer/customerlist.dart';
- // Replace with your settings page
 
 class HomePage extends StatefulWidget {
   @override

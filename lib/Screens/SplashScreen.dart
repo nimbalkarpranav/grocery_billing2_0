@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/Screens/home_screen.dart';
+import 'package:grocery_billing2_0/Screens/PinScreen.dart';
+import 'package:grocery_billing2_0/Screens/profileScreen.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'home_screen.dart';
 import 'login.dart';
-import 'PinScreen.dart';
+
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -20,62 +20,50 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkLoginStatus();
   }
 
-  // Function to check login status
-  _checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
 
-    // Navigate based on login status after the splash screen
-    Timer(Duration(seconds: 3), () {
-      if (isLoggedIn) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()), // Or HomePage
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
-      }
-    });
+    bool isLoggedIn = pref.getBool('isLoggedIn') ?? false;
+    bool isFirstLogin = pref.getBool('isFirstLogin') ?? true;
+    bool isProfileCompleted = pref.getBool('isProfileCompleted') ?? false; // ✅ Check Profile Completion
+
+    await Future.delayed(Duration(seconds: 3)); // ✅ 3 sec delay
+
+    if (!mounted) return;
+
+    if (!isLoggedIn) {
+      // ✅ First Time User -> Login Page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } else if (!isProfileCompleted) {
+      // ✅ Login ke baad agar Profile Complete nahi -> Profile Setup Page dikhao
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Profile()), // 🆕 Profile Setup
+      );
+    } else {
+      // ✅ Agar Profile Complete hai -> PinScreen dikhao
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => PinScreen()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        height: double.infinity,
+        color: Colors.white,
         width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.blue], // Gradient colors
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        height: double.infinity,
         child: Center(
-          child: Container(
-            height: 140,
-            width: 140,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blueAccent, // Shadow color
-                  blurRadius: 15,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: ClipOval(
-              child: Icon(
-                CupertinoIcons.cart, // Icon for splash screen
-                color: Colors.white,
-                size: 70,
-              ),
-            ),
+          child: Lottie.asset(
+            'assets/Animation - 1739798362492.json',
+            width: 300,
+            height: 300,
           ),
         ),
       ),

@@ -1,11 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:grocery_billing2_0/DataBase/database.dart';
 import '../Product/productlist.dart';
-import '../Product/addproduct.dart';
-
 import '../Screens/business.dart';
-import '../Screens/editpin.dart';
 import '../Screens/home_screen.dart';
 import '../Screens/profileScreen.dart';
 import '../pause/bill.dart';
@@ -20,7 +17,7 @@ class drawerPage extends StatefulWidget {
 }
 
 class _drawerPageState extends State<drawerPage> {
-  final dbHelper = DatabaseHelper.instance;
+  final dbHelper = DBHelper.instance;
 
   Future<void> logout() async {
     try {
@@ -102,10 +99,10 @@ class _drawerPageState extends State<drawerPage> {
             title: Text('Profile', style: TextStyle(fontSize: 18)),
             onTap: () {
               Navigator.pop(context);
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => Profile()),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Profile()),
+              );
             },
           ),
           ListTile(
@@ -115,7 +112,7 @@ class _drawerPageState extends State<drawerPage> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomePage()),
+                MaterialPageRoute(builder: (context) => BusinessEdit()),
               );
             },
           ),
