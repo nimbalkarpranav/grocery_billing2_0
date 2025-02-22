@@ -1,33 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/drawer/drawer.dart';
 
 import 'customer_db.dart';
 import 'customer_model.dart';
-import 'customerlist.dart';
-class Addcustomer extends StatefulWidget {
-  const Addcustomer({super.key});
+
+class UpdateCustomer extends StatefulWidget {
+  final Customer customer;
+
+  const UpdateCustomer({super.key, required this.customer});
 
   @override
-  State<Addcustomer> createState() => _AddcustomerState();
+  _UpdateCustomerState createState() => _UpdateCustomerState();
 }
 
-class _AddcustomerState extends State<Addcustomer> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+class _UpdateCustomerState extends State<UpdateCustomer> {
+  late TextEditingController nameController;
+  late TextEditingController phoneController;
+  late TextEditingController emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.customer.name);
+    phoneController = TextEditingController(text: widget.customer.phone);
+    emailController = TextEditingController(text: widget.customer.email);
+  }
+
+  void _updateCustomer() async {
+    if (nameController.text.isNotEmpty &&
+        phoneController.text.isNotEmpty &&
+        emailController.text.isNotEmpty) {
+      Customer updatedCustomer = Customer(
+        id: widget.customer.id,
+        name: nameController.text,
+        phone: phoneController.text,
+        email: emailController.text,
+      );
+
+      await cDatabaseHelper.instance.updateCustomer(updatedCustomer);
+      Navigator.pop(context); // Go back to the customer list
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill in all fields")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent, // Custom color for AppBar
+        backgroundColor: Colors.blueAccent, // Custom AppBar color
         title: Text(
-          "Add New Customer",
+          "Update Customer",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
-      drawer: drawerPage(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(  // Allows scrolling for smaller devices
@@ -47,7 +75,7 @@ class _AddcustomerState extends State<Addcustomer> {
                   contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                 ),
               ),
-              SizedBox(height: 16),  // Spacing between fields
+              SizedBox(height: 16), // Spacing between fields
 
               // Phone Number Field
               TextField(
@@ -63,7 +91,7 @@ class _AddcustomerState extends State<Addcustomer> {
                 ),
                 keyboardType: TextInputType.phone,
               ),
-              SizedBox(height: 16),  // Spacing between fields
+              SizedBox(height: 16), // Spacing between fields
 
               // Email Field
               TextField(
@@ -79,39 +107,11 @@ class _AddcustomerState extends State<Addcustomer> {
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              SizedBox(height: 32),  // Larger spacing before button
+              SizedBox(height: 32),
 
-              // Add Customer Button
+              // Update Customer Button
               ElevatedButton(
-                onPressed: () async {
-                  if (nameController.text.isNotEmpty &&
-                      phoneController.text.isNotEmpty &&
-                      emailController.text.isNotEmpty) {
-                    // Save the customer to the database
-                    Customer newCustomer = Customer(
-                      name: nameController.text,
-                      phone: phoneController.text,
-                      email: emailController.text,
-                    );
-                    await cDatabaseHelper.instance.addCustomer(newCustomer);
-
-                    // Clear the text fields after saving
-                    nameController.clear();
-                    phoneController.clear();
-                    emailController.clear();
-
-                    // Navigate back to the customer list page
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => CustomerList()),
-                    );
-                  } else {
-                    // Show a SnackBar if fields are empty
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please fill in all fields")),
-                    );
-                  }
-                },
+                onPressed: _updateCustomer,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,  // Custom button color
                   padding: EdgeInsets.symmetric(vertical: 16),
@@ -122,7 +122,7 @@ class _AddcustomerState extends State<Addcustomer> {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 10,right: 10),
                   child: Text(
-                    "Add Customer",
+                    "Update Customer",
                     style: TextStyle(fontSize: 18),
                   ),
                 ),
