@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/customer/customerAdd.dart';
 import 'package:intl/intl.dart';
 import '../DataBase/database.dart';
 import '../customer/customerlist.dart';
@@ -14,11 +13,13 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   final DBHelper _dbHelper = DBHelper.instance;
   final List<Map<String, dynamic>> _products = [];
   final List<Map<String, dynamic>> _customers = [];
+  List<Map<String, dynamic>> _filteredCustomers = [];
   int? _selectedCustomer;
   double _totalAmount = 0.0;
   List<Map<String, dynamic>> _selectedProducts = [];
   Map<String, dynamic>? _selectedProductForInvoice;
   int _productQuantity = 1;
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -29,11 +30,11 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   Future<void> _navigateToCustomerList() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddCustomer()),
+      MaterialPageRoute(builder: (context) => CustomersPage()),
     );
 
     if (result == true) {
-      _loadInitialData(); // Refresh customers list
+      _loadInitialData();
     }
   }
 
@@ -41,16 +42,22 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
     final customers = await _dbHelper.fetchCustomers();
     final products = await _dbHelper.fetchProducts();
 
-    print("Customers Fetched: $customers"); // Debugging Line
-
     setState(() {
       _customers.clear();
       _customers.addAll(customers);
+      _filteredCustomers = List.from(_customers);
       _products.clear();
       _products.addAll(products);
     });
+  }
 
-    print("Customers in State: $_customers"); // Debugging Line
+  void _filterCustomers(String query) {
+    setState(() {
+      _filteredCustomers = _customers
+          .where((customer) =>
+          customer['name'].toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
   void _calculateTotalAmount() {
@@ -91,7 +98,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
         actions: [
           TextButton(
             onPressed: _saveInvoice,
-            child: Text('SAVE ', style: TextStyle(color: Colors.white,fontSize: 17)),
+            child: Text('SAVE ', style: TextStyle(color: Colors.white, fontSize: 17)),
           ),
         ],
       ),
@@ -99,7 +106,19 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Customer Selection
+            // 🔹 Search Bar for Customer Search
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: "Search Customer",
+                prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onChanged: _filterCustomers,
+            ),
+            SizedBox(height: 10),
+
+            // Customer Selection Dropdown
             Row(
               children: [
                 Expanded(
@@ -114,7 +133,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                         _selectedCustomer = newValue;
                       });
                     },
-                    items: _customers.map<DropdownMenuItem<int>>((customer) {
+                    items: _filteredCustomers.map<DropdownMenuItem<int>>((customer) {
                       return DropdownMenuItem<int>(
                         value: customer['id'],
                         child: Text(customer['name']),
@@ -124,10 +143,11 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.add_circle, color: Colors.blueAccent, size: 30),
-                  onPressed: _navigateToCustomerList, // Open customer list
+                  onPressed: _navigateToCustomerList,
                 ),
               ],
             ),
+
             SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
@@ -149,6 +169,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                 },
               ),
             ),
+
             if (_selectedProductForInvoice != null) ...[
               Divider(),
               Container(

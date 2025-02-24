@@ -168,7 +168,8 @@ class DBHelper {
 
   Future<int> deletePin() async {
     final db = await database;
-    return await db.update('users', {'pin': null}, where: 'pin IS NOT NULL');
+    await db.update('users', {'firstLogin': 1});  // Logout state set karna
+    return await db.delete('pin');
   }
 
 
@@ -182,12 +183,7 @@ class DBHelper {
 
   Future<int> insertBusiness(Map<String, dynamic> business) async {
     final db = await instance.database;
-    return await db.insert('business', business);
-  }
-
-  Future<List<Map<String, dynamic>>> fetchBusinesses() async {
-    final db = await instance.database;
-    return await db.query('business');
+    return await db.insert('business', business, conflictAlgorithm: ConflictAlgorithm.replace); // Yeh add kar
   }
 
   Future<int> updateBusiness(Map<String, dynamic> business) async {
@@ -199,6 +195,13 @@ class DBHelper {
       whereArgs: [business['id']],
     );
   }
+
+
+  Future<List<Map<String, dynamic>>> fetchBusinesses() async {
+    final db = await instance.database;
+    return await db.query('business');
+  }
+
 
   Future<int> deleteBusiness(int id) async {
     final db = await instance.database;
@@ -289,15 +292,20 @@ class DBHelper {
   }
 
   // Update customer details
-  Future<int> updateCustomer(int id, Map<String, dynamic> customer) async {
-    final db = await instance.database;
+  Future<int> updateCustomer(Map<String, dynamic> customerData) async {
+    final db = await database;
     return await db.update(
       'customers',
-      customer,
+      {
+        'name': customerData['name'],
+        'phone': customerData['phone'],
+        'email': customerData['email'],
+      },
       where: 'id = ?',
-      whereArgs: [id],
+      whereArgs: [customerData['id']],
     );
   }
+
 
 
 

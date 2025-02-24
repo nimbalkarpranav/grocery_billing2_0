@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/DataBase/database.dart';
-import 'package:grocery_billing2_0/Screens/login.dart';
 import '../Product/productlist.dart';
 import '../Screens/business.dart';
 import '../Screens/home_screen.dart';
@@ -23,9 +22,10 @@ class _drawerPageState extends State<drawerPage> {
   Future<void> logout() async {
     try {
       int rowsAffected = await dbHelper.deletePin();
-      print('PIN deleted for $rowsAffected user(s)');
+      print('PIN deleted for $rowsAffected user(s)');  // Debugging line
 
       if (rowsAffected > 0) {
+        print('Navigating to Login Screen');  // Debugging line
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         throw Exception("No PIN found to delete");
@@ -37,6 +37,7 @@ class _drawerPageState extends State<drawerPage> {
       );
     }
   }
+
 
 
 

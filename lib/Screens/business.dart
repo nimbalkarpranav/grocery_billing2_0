@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../DataBase/database.dart';
 import '../drawer/drawer.dart';
 
@@ -26,33 +25,45 @@ class _BusinessEditState extends State<BusinessEdit> {
   void initState() {
     super.initState();
     _loadBusinessData();
+    checkBusinessData();
+  }
+  Future<void> checkBusinessData() async {
+    final businesses = await DBHelper.instance.fetchBusinesses();
+    print("Stored Businesses: $businesses");
   }
 
   Future<void> _saveBusinessData() async {
+    final businesses = await DBHelper.instance.fetchBusinesses();
+    bool hasBusiness = businesses.isNotEmpty; // Check if data exists
+
     final businessData = {
-      'id': 1,
+      'id': hasBusiness ? businesses.first['id'] : null, // Agar data hai toh use karo
       'name': bName.text,
       'email': bEmail.text,
       'phone': bPhone.text,
       'address': bAddress.text,
       'description': bDescription.text,
-      'image': _imagePath,
+      'imagePath': _imagePath,
     };
 
-    if (isEdit) {
+    if (hasBusiness) {
       await DBHelper.instance.updateBusiness(businessData);
     } else {
       await DBHelper.instance.insertBusiness(businessData);
     }
 
+    _loadBusinessData(); // Refresh the UI
     setState(() => isEdit = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Business Profile Saved Successfully!")),
     );
   }
 
+
+
   Future<void> _loadBusinessData() async {
     final businesses = await DBHelper.instance.fetchBusinesses();
+    print("Business List: $businesses"); // Debugging ke liye print kar de
     if (businesses.isNotEmpty) {
       final business = businesses.first;
       setState(() {
@@ -61,10 +72,11 @@ class _BusinessEditState extends State<BusinessEdit> {
         bPhone.text = business['phone'] ?? '';
         bAddress.text = business['address'] ?? '';
         bDescription.text = business['description'] ?? '';
-        _imagePath = business['image'];
+        _imagePath = business['imagePath'];
       });
     }
   }
+
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();

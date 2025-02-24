@@ -4,7 +4,6 @@ import 'package:grocery_billing2_0/Screens/PinScreen.dart';
 import 'package:grocery_billing2_0/Screens/profileScreen.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_screen.dart';
 import 'login.dart';
 
 
@@ -24,7 +23,6 @@ class _SplashScreenState extends State<SplashScreen> {
     SharedPreferences pref = await SharedPreferences.getInstance();
 
     bool isLoggedIn = pref.getBool('isLoggedIn') ?? false;
-    bool isFirstLogin = pref.getBool('isFirstLogin') ?? true;
     bool isProfileCompleted = pref.getBool('isProfileCompleted') ?? false; // ✅ Check Profile Completion
 
     await Future.delayed(Duration(seconds: 3)); // ✅ 3 sec delay

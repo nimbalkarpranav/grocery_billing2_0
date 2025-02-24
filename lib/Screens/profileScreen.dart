@@ -44,10 +44,10 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> _saveProfile() async {
-    if (pPin.text.isEmpty) {
-      _showSnackbar("Please set a PIN to proceed.");
-      return;
-    }
+    final existingProfile = await DBHelper.instance.fetchProfile();
+    if (existingProfile == null) return;
+
+    bool isPinChanged = pPin.text != existingProfile['pin']; // 🔹 Check if PIN is changed
 
     final profile = {
       'name': pName.text,
@@ -57,12 +57,7 @@ class _ProfileState extends State<Profile> {
       'pin': pPin.text,
     };
 
-    final existingProfile = await DBHelper.instance.fetchProfile();
-    if (existingProfile == null) {
-      await DBHelper.instance.insertProfile(profile);
-    } else {
-      await DBHelper.instance.updateProfile({...profile, 'id': existingProfile['id']});
-    }
+    await DBHelper.instance.updateProfile({...profile, 'id': existingProfile['id']});
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userPIN', pPin.text);
@@ -70,19 +65,21 @@ class _ProfileState extends State<Profile> {
 
     _showSnackbar("Profile updated successfully!");
 
-    // Delay to prevent black screen issue
-    Future.delayed(Duration(milliseconds: 500), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PinScreen()), // ✅ Fix: Navigate to PIN screen
-        );
-      }
-    });
-
-
     setState(() => isEdit = false);
+
+    // ✅ PinScreen pe sirf tabhi bhejo jab PIN change ho
+    if (isPinChanged) {
+      Future.delayed(Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PinScreen()),
+          );
+        }
+      });
+    }
   }
+
 
 
   Future<void> _pickImage() async {
@@ -150,7 +147,8 @@ class _ProfileState extends State<Profile> {
             ),
         ],
       ),
-      body: Container(color: Colors.blueAccent,
+      body: Container(
+        color: Colors.blue[50], // 🔹 Fix: Background color change to match entire screen
         child: SingleChildScrollView(
           padding: EdgeInsets.all(16),
           child: Column(
@@ -188,16 +186,17 @@ class _ProfileState extends State<Profile> {
                 ElevatedButton(
                   onPressed: _saveProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Colors.blueAccent, // 🔹 Fix: Button color now matches theme
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
                   ),
-                  child: Text("SAVE ", style: TextStyle(fontSize: 18)),
+                  child: Text("SAVE ", style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
             ],
           ),
         ),
       ),
+
     );
   }
 }

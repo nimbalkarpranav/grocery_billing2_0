@@ -105,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
   void _showDialog(String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => AlertDialog(backgroundColor: Colors.blue.shade100,
         title: Text(message, textAlign: TextAlign.center),
         actions: [
           TextButton(
@@ -120,21 +120,24 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.blue.shade100,
         title: Text("Registration Successful"),
         content: Text("Do you want to login now?"),
         actions: [
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context), // ❌ Close only
-            child: Text("Later"),
+            child: Text("Later",style: TextStyle(color: Colors.white),),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             onPressed: () {
               Navigator.pop(context);
               setState(() {
                 isLoginMode = true;
               });
             },
-            child: Text("Login Now", style: TextStyle(color: Colors.blue)),
+            child: Text("Login Now", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
