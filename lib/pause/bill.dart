@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../DataBase/database.dart';
 import '../Product/addproduct.dart';
 import '../customer/customerlist.dart';
@@ -21,6 +20,8 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   double _totalAmount = 0.0;
   TextEditingController customerSearchController = TextEditingController();
   TextEditingController productSearchController = TextEditingController();
+  bool _showCustomerList = false;
+  bool _showProductList = false;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
           .where((customer) =>
           customer['name'].toLowerCase().contains(query.toLowerCase()))
           .toList();
+      _showCustomerList = query.isNotEmpty;
     });
   }
 
@@ -54,18 +56,41 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
           .where((product) =>
           product['name'].toLowerCase().contains(query.toLowerCase()))
           .toList();
+      _showProductList = query.isNotEmpty;
+    });
+  }
+
+  void _selectCustomer(int id) {
+    setState(() {
+      _selectedCustomer = id;
+      customerSearchController.text =
+      _customers.firstWhere((c) => c['id'] == id)['name'];
+      _showCustomerList = false;
     });
   }
 
   void _addProductToInvoice(Map<String, dynamic> product) {
     setState(() {
       final existingProduct = _selectedProducts.firstWhere(
-              (p) => p['id'] == product['id'],
-          orElse: () => {});
+            (p) => p['id'] == product['id'],
+        orElse: () => {},
+      );
       if (existingProduct.isNotEmpty) {
         existingProduct['quantity']++;
       } else {
         _selectedProducts.add({...product, 'quantity': 1});
+      }
+      _calculateTotalAmount();
+      productSearchController.clear();
+      _showProductList = false;
+    });
+  }
+
+  void _updateQuantity(int index, int change) {
+    setState(() {
+      _selectedProducts[index]['quantity'] += change;
+      if (_selectedProducts[index]['quantity'] <= 0) {
+        _selectedProducts.removeAt(index);
       }
       _calculateTotalAmount();
     });
@@ -74,30 +99,23 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   void _calculateTotalAmount() {
     setState(() {
       _totalAmount = _selectedProducts.fold(
-          0.0, (sum, product) => sum + (product['price'] * product['quantity']));
+          0.0,
+              (sum, product) =>
+          sum + (product['price'] * product['quantity']));
     });
   }
 
-  Future<void> _saveInvoice() async {
-    if (_selectedCustomer == null || _selectedProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a customer and add products.')),
-      );
-      return;
-    }
-    final invoiceId = await _dbHelper.insertPaymentDetail({
-      'customer_id': _selectedCustomer,
-      'amount': _totalAmount,
-      'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Invoice #$invoiceId saved successfully!')),
+  Widget tableCell(String text, [bool isHeader = false]) {
+    return Padding(
+      padding: EdgeInsets.all(8),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
     );
-    setState(() {
-      _selectedCustomer = null;
-      _selectedProducts.clear();
-      _totalAmount = 0.0;
-    });
   }
 
   @override
@@ -109,139 +127,200 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
         backgroundColor: Colors.blueAccent,
         actions: [
           TextButton(
-            onPressed: _saveInvoice,
-            child: Text('SAVE', style: TextStyle(color: Colors.white, fontSize: 17)),
+            onPressed: () {},
+            child: Text('SAVE',
+                style: TextStyle(color: Colors.white, fontSize: 17)),
           ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
+        child: Stack(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: customerSearchController,
-                    decoration: InputDecoration(
-                      labelText: "Customer Name",
-                      prefixIcon: Icon(Icons.person, color: Colors.blueAccent),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            Column(children: [
+              // Customer Input Field
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: customerSearchController,
+                      decoration: InputDecoration(
+                        labelText: "Customer Name",
+                        prefixIcon: Icon(Icons.person, color: Colors.blueAccent),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onTap: () => setState(() => _showCustomerList = true),
+                      onChanged: _filterCustomers,
                     ),
-                    onChanged: _filterCustomers,
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CustomersPage()));
+                    },
+                    icon: Icon(Icons.add_circle, color: Colors.green, size: 30),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+
+              // Product Input Field
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: productSearchController,
+                      decoration: InputDecoration(
+                        labelText: "Product Name",
+                        prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onTap: () => setState(() => _showProductList = true),
+                      onChanged: _filterProducts,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AddProductPage()));
+                    },
+                    icon: Icon(Icons.add_circle, color: Colors.blue, size: 30),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+
+              Center(
+                child: Text("Products Details",
+                    style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.blueAccent)),
+              ),
+              SizedBox(height: 10),
+
+              // Invoice Table
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Table(
+                        border: TableBorder.all(color: Colors.grey),
+                        columnWidths: {
+                          0: FixedColumnWidth(30),
+                          1: FlexColumnWidth(),
+                          2: FixedColumnWidth(113),
+                          3: FixedColumnWidth(60),
+                          4: FixedColumnWidth(60),
+                        },
+                        children: [
+                          TableRow(
+                            decoration:
+                            BoxDecoration(color: Colors.blueAccent.shade100),
+                            children: [
+                              tableCell("#", true),
+                              tableCell("Product", true),
+                              tableCell("Qty", true),
+                              tableCell("Price", true),
+                              tableCell("Total", true),
+                            ],
+                          ),
+                          for (var i = 0; i < _selectedProducts.length; i++)
+                            TableRow(children: [
+                              tableCell((i + 1).toString()),
+                              tableCell(_selectedProducts[i]['name']),
+                              Padding(
+                                padding: EdgeInsets.all(4),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.remove_circle,size: 20,
+                                          color: Colors.red),
+                                      onPressed: () => _updateQuantity(i, -1),
+                                    ),
+                                    Text(_selectedProducts[i]['quantity']
+                                        .toString()),
+                                    IconButton(
+                                      icon: Icon(Icons.add_circle,size: 20,
+                                          color: Colors.green),
+                                      onPressed: () => _updateQuantity(i, 1),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              tableCell('₹${_selectedProducts[i]['price']}'),
+                              tableCell(
+                                  '₹${_selectedProducts[i]['price'] * _selectedProducts[i]['quantity']}'),
+                            ]),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Text('Total: ₹$_totalAmount',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18)),
+                    ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => CustomersPage()));
-                  },
-                  icon: Icon(Icons.add_circle, color: Colors.blueAccent, size: 30),
-                ),
-              ],
-            ),
-            _filteredCustomers.isNotEmpty && customerSearchController.text.isNotEmpty
-                ? ListView.builder(
-              shrinkWrap: true,
-              itemCount: _filteredCustomers.length,
-              itemBuilder: (context, index) {
-                final customer = _filteredCustomers[index];
-                return ListTile(
-                  title: Text(customer['name']),
-                  onTap: () {
-                    setState(() {
-                      _selectedCustomer = customer['id'];
-                      customerSearchController.text = customer['name'];
-                      _filteredCustomers = [];
-                    });
-                  },
-                );
-              },
-            )
-                : SizedBox.shrink(),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: productSearchController,
-                    decoration: InputDecoration(
-                      labelText: "Product Name",
-                      prefixIcon: Icon(Icons.production_quantity_limits, color: Colors.blueAccent),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ]),
+
+            // Customer List Popup
+            if (_showCustomerList)
+              Positioned(
+                top: 55,
+                left: 0,
+                right: 0,
+                child: Material(
+                  elevation: 5,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    child: ListView.builder(
+                      itemCount: _filteredCustomers.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(_filteredCustomers[index]['name']),
+                          onTap: () =>
+                              _selectCustomer(_filteredCustomers[index]['id']),
+                        );
+                      },
                     ),
-                    onChanged: _filterProducts,
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => AddProductPage()));
-                  },
-                  icon: Icon(Icons.add_circle, color: Colors.green, size: 30),
+              ),
+
+            // Product List Popup
+            if (_showProductList)
+              Positioned(
+                top: 135,
+                left: 0,
+                right: 0,
+                child: Material(
+                  elevation: 5,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    child: ListView.builder(
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(_filteredProducts[index]['name']),
+                          onTap: () =>
+                              _addProductToInvoice(_filteredProducts[index]),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ],
-            ),
-            _filteredProducts.isNotEmpty && productSearchController.text.isNotEmpty
-                ? ListView.builder(
-              shrinkWrap: true,
-              itemCount: _filteredProducts.length,
-              itemBuilder: (context, index) {
-                final product = _filteredProducts[index];
-                return ListTile(
-                  title: Text(product['name']),
-                  subtitle: Text('₹${product['price']}'),
-                  onTap: () {
-                    _addProductToInvoice(product);
-                    productSearchController.clear();
-                    setState(() => _filteredProducts = []);
-                  },
-                );
-              },
-            )
-                : SizedBox.shrink(),
-            SizedBox(height: 10),
-            Table(
-              border: TableBorder.all(color: Colors.grey),
-              columnWidths: {
-                0: FixedColumnWidth(40),
-                1: FlexColumnWidth(),
-                2: FixedColumnWidth(60),
-                3: FixedColumnWidth(60),
-                4: FixedColumnWidth(60),
-                5: FixedColumnWidth(70),
-              },
-              children: [
-                TableRow(
-                  decoration: BoxDecoration(color: Colors.blueAccent.shade100),
-                  children: [
-                    tableCell("#", true),
-                    tableCell("Product", true),
-                    tableCell("Qty", true),
-                    tableCell("Price", true),
-                    tableCell("Total", true),
-                  ],
-                ),
-                for (var i = 0; i < _selectedProducts.length; i++)
-                  TableRow(children: [
-                    tableCell((i + 1).toString()),
-                    tableCell(_selectedProducts[i]['name']),
-                    tableCell(_selectedProducts[i]['quantity'].toString()),
-                    tableCell('₹${_selectedProducts[i]['price']}'),
-                    tableCell('₹${_selectedProducts[i]['price'] * _selectedProducts[i]['quantity']}'),
-                  ]),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text('Total: ₹$_totalAmount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget tableCell(String text, [bool isHeader = false]) {
-    return Padding(
-      padding: EdgeInsets.all(8),
-      child: Text(text, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal)),
     );
   }
 }
