@@ -226,11 +226,19 @@ class DBHelper {
     final db = await instance.database;
     return await db.update(
       'profile',
-      profile,
+      {
+        'name': profile['name'],
+        'email': profile['email'],
+        'phone': profile['phone'],
+        'address': profile['address'],
+        'pin': profile['pin'],
+        'imagePath': profile['imagePath'],
+      },
       where: 'id = ?',
       whereArgs: [profile['id']],
     );
   }
+
   // CRUD for Categories
   // CRUD for Categories
   Future<int> insertCategory(Map<String, dynamic> category) async {

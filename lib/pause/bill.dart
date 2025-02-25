@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../DataBase/database.dart';
+import '../Product/addproduct.dart';
 import '../customer/customerlist.dart';
 import '../drawer/drawer.dart';
 
@@ -11,15 +12,15 @@ class InvoiceBillingPage extends StatefulWidget {
 
 class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   final DBHelper _dbHelper = DBHelper.instance;
-  final List<Map<String, dynamic>> _products = [];
-  final List<Map<String, dynamic>> _customers = [];
+  List<Map<String, dynamic>> _products = [];
+  List<Map<String, dynamic>> _customers = [];
   List<Map<String, dynamic>> _filteredCustomers = [];
+  List<Map<String, dynamic>> _filteredProducts = [];
+  List<Map<String, dynamic>> _selectedProducts = [];
   int? _selectedCustomer;
   double _totalAmount = 0.0;
-  List<Map<String, dynamic>> _selectedProducts = [];
-  Map<String, dynamic>? _selectedProductForInvoice;
-  int _productQuantity = 1;
-  TextEditingController _searchController = TextEditingController();
+  TextEditingController customerSearchController = TextEditingController();
+  TextEditingController productSearchController = TextEditingController();
 
   @override
   void initState() {
@@ -27,27 +28,14 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
     _loadInitialData();
   }
 
-  Future<void> _navigateToCustomerList() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CustomersPage()),
-    );
-
-    if (result == true) {
-      _loadInitialData();
-    }
-  }
-
   Future<void> _loadInitialData() async {
     final customers = await _dbHelper.fetchCustomers();
     final products = await _dbHelper.fetchProducts();
-
     setState(() {
-      _customers.clear();
-      _customers.addAll(customers);
-      _filteredCustomers = List.from(_customers);
-      _products.clear();
-      _products.addAll(products);
+      _customers = customers;
+      _filteredCustomers = customers;
+      _products = products;
+      _filteredProducts = products;
     });
   }
 
@@ -60,10 +48,34 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
     });
   }
 
+  void _filterProducts(String query) {
+    setState(() {
+      _filteredProducts = _products
+          .where((product) =>
+          product['name'].toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
+  void _addProductToInvoice(Map<String, dynamic> product) {
+    setState(() {
+      final existingProduct = _selectedProducts.firstWhere(
+              (p) => p['id'] == product['id'],
+          orElse: () => {});
+      if (existingProduct.isNotEmpty) {
+        existingProduct['quantity']++;
+      } else {
+        _selectedProducts.add({...product, 'quantity': 1});
+      }
+      _calculateTotalAmount();
+    });
+  }
+
   void _calculateTotalAmount() {
-    _totalAmount = _selectedProducts.fold(0.0, (sum, product) =>
-    sum + ((product['price'] ?? 0) * (product['quantity'] ?? 0)));
-    setState(() {});
+    setState(() {
+      _totalAmount = _selectedProducts.fold(
+          0.0, (sum, product) => sum + (product['price'] * product['quantity']));
+    });
   }
 
   Future<void> _saveInvoice() async {
@@ -98,7 +110,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
         actions: [
           TextButton(
             onPressed: _saveInvoice,
-            child: Text('SAVE ', style: TextStyle(color: Colors.white, fontSize: 17)),
+            child: Text('SAVE', style: TextStyle(color: Colors.white, fontSize: 17)),
           ),
         ],
       ),
@@ -106,138 +118,130 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // 🔹 Search Bar for Customer Search
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: "Search Customer",
-                prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              onChanged: _filterCustomers,
-            ),
-            SizedBox(height: 10),
-
-            // Customer Selection Dropdown
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<int>(
+                  child: TextField(
+                    controller: customerSearchController,
                     decoration: InputDecoration(
-                      labelText: 'Select Customer',
-                      border: OutlineInputBorder(),
+                      labelText: "Customer Name",
+                      prefixIcon: Icon(Icons.person, color: Colors.blueAccent),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    value: _selectedCustomer,
-                    onChanged: (int? newValue) {
-                      setState(() {
-                        _selectedCustomer = newValue;
-                      });
-                    },
-                    items: _filteredCustomers.map<DropdownMenuItem<int>>((customer) {
-                      return DropdownMenuItem<int>(
-                        value: customer['id'],
-                        child: Text(customer['name']),
-                      );
-                    }).toList(),
+                    onChanged: _filterCustomers,
                   ),
                 ),
                 IconButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CustomersPage()));
+                  },
                   icon: Icon(Icons.add_circle, color: Colors.blueAccent, size: 30),
-                  onPressed: _navigateToCustomerList,
                 ),
               ],
             ),
-
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _products.length,
-                itemBuilder: (context, index) {
-                  final product = _products[index];
-                  return ListTile(
-                    title: Text(product['name']),
-                    subtitle: Text('₹${product['price']}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.add, color: Colors.blueAccent),
-                      onPressed: () {
-                        setState(() {
-                          _selectedProductForInvoice = product;
-                        });
-                      },
+            _filteredCustomers.isNotEmpty && customerSearchController.text.isNotEmpty
+                ? ListView.builder(
+              shrinkWrap: true,
+              itemCount: _filteredCustomers.length,
+              itemBuilder: (context, index) {
+                final customer = _filteredCustomers[index];
+                return ListTile(
+                  title: Text(customer['name']),
+                  onTap: () {
+                    setState(() {
+                      _selectedCustomer = customer['id'];
+                      customerSearchController.text = customer['name'];
+                      _filteredCustomers = [];
+                    });
+                  },
+                );
+              },
+            )
+                : SizedBox.shrink(),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: productSearchController,
+                    decoration: InputDecoration(
+                      labelText: "Product Name",
+                      prefixIcon: Icon(Icons.production_quantity_limits, color: Colors.blueAccent),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                  );
-                },
-              ),
-            ),
-
-            if (_selectedProductForInvoice != null) ...[
-              Divider(),
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                    onChanged: _filterProducts,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => AddProductPage()));
+                  },
+                  icon: Icon(Icons.add_circle, color: Colors.green, size: 30),
+                ),
+              ],
+            ),
+            _filteredProducts.isNotEmpty && productSearchController.text.isNotEmpty
+                ? ListView.builder(
+              shrinkWrap: true,
+              itemCount: _filteredProducts.length,
+              itemBuilder: (context, index) {
+                final product = _filteredProducts[index];
+                return ListTile(
+                  title: Text(product['name']),
+                  subtitle: Text('₹${product['price']}'),
+                  onTap: () {
+                    _addProductToInvoice(product);
+                    productSearchController.clear();
+                    setState(() => _filteredProducts = []);
+                  },
+                );
+              },
+            )
+                : SizedBox.shrink(),
+            SizedBox(height: 10),
+            Table(
+              border: TableBorder.all(color: Colors.grey),
+              columnWidths: {
+                0: FixedColumnWidth(40),
+                1: FlexColumnWidth(),
+                2: FixedColumnWidth(60),
+                3: FixedColumnWidth(60),
+                4: FixedColumnWidth(60),
+                5: FixedColumnWidth(70),
+              },
+              children: [
+                TableRow(
+                  decoration: BoxDecoration(color: Colors.blueAccent.shade100),
                   children: [
-                    Text('Selected Product:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('${_selectedProductForInvoice!['name']}'),
-                    Text('Price: ₹${_selectedProductForInvoice!['price']}'),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.remove),
-                          onPressed: () {
-                            if (_productQuantity > 1) {
-                              setState(() {
-                                _productQuantity--;
-                              });
-                            }
-                          },
-                        ),
-                        Text('Quantity: $_productQuantity'),
-                        IconButton(
-                          icon: Icon(Icons.add),
-                          onPressed: () {
-                            setState(() {
-                              _productQuantity++;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _selectedProducts.add({
-                            ..._selectedProductForInvoice!,
-                            'quantity': _productQuantity,
-                          });
-                          _calculateTotalAmount();
-                          _selectedProductForInvoice = null;
-                          _productQuantity = 1;
-                        });
-                      },
-                      child: Text('Add to Invoice'),
-                    ),
+                    tableCell("#", true),
+                    tableCell("Product", true),
+                    tableCell("Qty", true),
+                    tableCell("Price", true),
+                    tableCell("Total", true),
                   ],
                 ),
-              ),
-            ],
-            Divider(),
-            Text(
-              'Total Amount: ₹$_totalAmount',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                for (var i = 0; i < _selectedProducts.length; i++)
+                  TableRow(children: [
+                    tableCell((i + 1).toString()),
+                    tableCell(_selectedProducts[i]['name']),
+                    tableCell(_selectedProducts[i]['quantity'].toString()),
+                    tableCell('₹${_selectedProducts[i]['price']}'),
+                    tableCell('₹${_selectedProducts[i]['price'] * _selectedProducts[i]['quantity']}'),
+                  ]),
+              ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 16),
+            Text('Total: ₹$_totalAmount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget tableCell(String text, [bool isHeader = false]) {
+    return Padding(
+      padding: EdgeInsets.all(8),
+      child: Text(text, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal)),
     );
   }
 }

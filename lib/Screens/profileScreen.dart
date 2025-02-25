@@ -45,9 +45,6 @@ class _ProfileState extends State<Profile> {
 
   Future<void> _saveProfile() async {
     final existingProfile = await DBHelper.instance.fetchProfile();
-    if (existingProfile == null) return;
-
-    bool isPinChanged = pPin.text != existingProfile['pin']; // 🔹 Check if PIN is changed
 
     final profile = {
       'name': pName.text,
@@ -55,19 +52,25 @@ class _ProfileState extends State<Profile> {
       'phone': pPhone.text,
       'address': pAddress.text,
       'pin': pPin.text,
+      'imagePath': _imagePath,
     };
 
-    await DBHelper.instance.updateProfile({...profile, 'id': existingProfile['id']});
+    bool isPinChanged = existingProfile != null && pPin.text != (existingProfile['pin'] ?? '');
+
+    if (existingProfile == null) {
+      await DBHelper.instance.insertProfile(profile);
+    } else {
+      await DBHelper.instance.updateProfile({...profile, 'id': existingProfile['id']});
+    }
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userPIN', pPin.text);
     await prefs.setBool('isProfileCompleted', true);
 
     _showSnackbar("Profile updated successfully!");
-
     setState(() => isEdit = false);
 
-    // ✅ PinScreen pe sirf tabhi bhejo jab PIN change ho
+    // **Navigate to PinScreen only if PIN is changed**
     if (isPinChanged) {
       Future.delayed(Duration(milliseconds: 500), () {
         if (mounted) {
@@ -79,6 +82,8 @@ class _ProfileState extends State<Profile> {
       });
     }
   }
+
+
 
 
 
