@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/DataBase/database.dart';
+import 'package:grocery_billing2_0/customer/customerlist.dart';
 import '../Product/productlist.dart';
 import '../Screens/business.dart';
 import '../Screens/home_screen.dart';
@@ -113,6 +114,17 @@ class _drawerPageState extends State<drawerPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => BusinessEdit()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.list, color: Colors.blueAccent),
+            title: Text('Customer  List', style: TextStyle(fontSize: 18)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CustomersPage()),
               );
             },
           ),

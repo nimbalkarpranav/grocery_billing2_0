@@ -11,6 +11,12 @@ class MyApp extends StatelessWidget {
       title: 'Product Manager',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+        scaffoldBackgroundColor: Colors.white,
+        textTheme: TextTheme(
+
+
+        ),
+
 
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.blue,

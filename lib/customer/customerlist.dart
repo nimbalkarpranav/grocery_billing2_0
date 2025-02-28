@@ -45,7 +45,7 @@ class _CustomersPageState extends State<CustomersPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.blue.shade100,
+          backgroundColor: Colors.grey.shade200,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: Text(_editingCustomerId == null ? "Add Customer" : "Edit Customer"),
           content: Column(
@@ -64,7 +64,7 @@ class _CustomersPageState extends State<CustomersPage> {
               child: Text("Cancel", style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
               onPressed: () async {
                 if (_nameController.text.isNotEmpty && _phoneController.text.isNotEmpty) {
                   Map<String, dynamic> customerData = {
@@ -84,12 +84,12 @@ class _CustomersPageState extends State<CustomersPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("Please fill in all fields", style: TextStyle(color: Colors.white)),
-                      backgroundColor: Colors.orange,
+                      backgroundColor: Colors.redAccent,
                     ),
                   );
                 }
               },
-              child: Text(_editingCustomerId == null ? "Add" : "Update"),
+              child: Text(_editingCustomerId == null ? "Add" : "Update",style: TextStyle(color: Colors.white),),
             ),
           ],
         );
@@ -120,7 +120,7 @@ class _CustomersPageState extends State<CustomersPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.blue.shade100,
+         backgroundColor: Colors.grey.shade200,
           title: Text("Confirm Deletion"),
           content: Text("Are you sure you want to delete this customer?"),
           actions: [
@@ -148,7 +148,7 @@ class _CustomersPageState extends State<CustomersPage> {
     return Scaffold(
       drawer: drawerPage(),
       appBar: AppBar(
-        title: Text('Customers List'),
+        title: Text('Customers '),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -158,35 +158,32 @@ class _CustomersPageState extends State<CustomersPage> {
         ],
         backgroundColor: Colors.blueAccent,
       ),
-      body: Container(
-        color: Colors.blueAccent.shade100,
-        child: ListView.builder(
-          padding: EdgeInsets.all(8),
-          itemCount: _customers.length,
-          itemBuilder: (context, index) {
-            final customer = _customers[index];
-            return Card(
-              color: Colors.white54,
-              child: ListTile(
-                title: Text(customer['name']),
-                subtitle: Text('Phone: ${customer['phone']}\nEmail: ${customer['email'] ?? 'N/A'}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () => _showCustomerDialog(customerId: customer['id']),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteCustomer(customer['id']),
-                    ),
-                  ],
-                ),
+      body: ListView.builder(
+        padding: EdgeInsets.all(8),
+        itemCount: _customers.length,
+        itemBuilder: (context, index) {
+          final customer = _customers[index];
+          return Card(
+            color: Colors.grey.shade200,
+            child: ListTile(
+              title: Text(customer['name']),
+              subtitle: Text('Phone: ${customer['phone']}\nEmail: ${customer['email'] ?? 'N/A'}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () => _showCustomerDialog(customerId: customer['id']),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteCustomer(customer['id']),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

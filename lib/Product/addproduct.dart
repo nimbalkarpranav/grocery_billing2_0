@@ -1,221 +1,239 @@
-import 'package:flutter/material.dart';
-import '../DataBase/database.dart';
-import '../Screens/newCat_Screen.dart';
-import '../drawer/drawer.dart';
-
-class AddProductPage extends StatefulWidget {
-  @override
-  _AddProductPageState createState() => _AddProductPageState();
-}
-
-class _AddProductPageState extends State<AddProductPage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController sellPriceController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
-
-  String? selectedCategory; // For the dropdown
-  List<String> categories = []; // To store categories
-
-  /// Fetch categories from the database and add new ones at the top
-  Future<void> fetchCategories() async {
-    final data = await DBHelper.instance.fetchCategories();
-    setState(() {
-      categories = data.map((e) => e['name'] as String).toList();
-      categories = categories.reversed.toList(); // Newly added category on top
-    });
-  }
-
-  /// Save product to the database
-  void saveProduct(BuildContext context) async {
-    if (_formKey.currentState!.validate()) {
-      await DBHelper.instance.insertProduct({
-        'name': nameController.text,
-        'price': double.parse(priceController.text),
-        'sellPrice': double.parse(sellPriceController.text),
-        'category': selectedCategory,
-        'description': descriptionController.text,
-      });
-
-      // Return to the previous screen with success result
-      Navigator.pop(context, true);
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCategories();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: drawerPage(),
-      appBar: AppBar(
-        title: Text('Add Product', style: TextStyle(fontSize: 22)),
-        elevation: 4,
-        backgroundColor: Colors.blueAccent,
-        actions: [
-          TextButton(
-            onPressed: () => saveProduct(context),
-            child: Text(
-              'SAVE',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTextField(
-                controller: nameController,
-                labelText: 'Product Name',
-                hintText: 'Enter the product name',
-                validator: (value) =>
-                value!.isEmpty ? 'Enter Product Name' : null,
-              ),
-              SizedBox(height: 10),
-              _buildTextField(
-                controller: sellPriceController,
-                labelText: 'MRP Price',
-                hintText: 'Enter the selling price',
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value!.isEmpty) return 'Enter Sell Price';
-                  final sellPrice = double.tryParse(value);
-                  final price = double.tryParse(priceController.text);
-
-                  if (sellPrice == null || sellPrice <= 0) {
-                    return 'Enter a valid Sell Price';
-                  }
-
-                  // Ensure Sell Price is greater than or equal to Price
-                  if (price != null && sellPrice < price) {
-                    return 'Sell Price should be greater than or equal to Price';
-                  }
-
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              _buildTextField(
-                controller: priceController,
-                labelText: 'Selling Price',
-                hintText: 'Enter the price',
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value!.isEmpty) return 'Enter Price';
-                  final price = double.tryParse(value);
-                  if (price == null || price <= 0) return 'Enter a valid Price';
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: DropdownButtonFormField<String>(
-                        value: selectedCategory,
-                        items: categories.map((category) {
-                          return DropdownMenuItem(
-                            value: category,
-                            child: Text(category),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCategory = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Category',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        validator: (value) =>
-                        value == null ? 'Select a Category' : null,
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddCategoryPage()),
-                          );
-                          await fetchCategories(); // Refresh categories after adding new one
-                          setState(() {
-                            selectedCategory =
-                            categories.isNotEmpty ? categories.first : null;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.all(12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Icon(Icons.add, size: 20),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10),
-              _buildTextField(
-                controller: descriptionController,
-                labelText: 'Description',
-                hintText: 'Enter a brief description',
-                maxLines: 3,
-              ),
-              SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Reusable TextField Widget
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    String? hintText,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      keyboardType: keyboardType,
-      validator: validator,
-      maxLines: maxLines,
-    );
-  }
-}
+// Widget build(BuildContext context) {
+//
+//   return Scaffold(
+//
+//     drawer: drawerPage(),
+//
+//     appBar: AppBar(
+//
+//       title: Text('Product List', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+//
+//       backgroundColor: Colors.blueAccent,
+//
+//       elevation: 4,
+//
+//       actions: [
+//
+//         IconButton(
+//
+//           icon: Icon(Icons.add),
+//
+//           onPressed: () async {
+//
+//             final result = await Navigator.push(
+//
+//               context,
+//
+//               MaterialPageRoute(builder: (context) => AddProductPage()),
+//
+//             );
+//
+//             if (result == true) {
+//
+//               fetchProducts(); // Refresh products
+//
+//             }
+//
+//           },
+//
+//         ),
+//
+//       ],
+//
+//     ),
+//
+//   //   body: products.isEmpty
+//   //
+//   //       ? Center(
+//   //
+//   //     child: Text(
+//   //
+//   //       'No Products Found',
+//   //
+//   //       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+//   //
+//   //     ),
+//   //
+//   //   )
+//   //
+//   //       : ListView.builder(
+//   //
+//   //     itemCount: products.length,
+//   //
+//   //     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+//   //
+//   //     itemBuilder: (context, index) {
+//   //
+//   //       final product = products[index];
+//   //
+//   //       return Padding(
+//   //
+//   //         padding: const EdgeInsets.symmetric(vertical: 6),
+//   //
+//   //         child: Card(
+//   //
+//   //           elevation: 6,
+//   //
+//   //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//   //
+//   //           child: Container(
+//   //
+//   //             decoration: BoxDecoration(
+//   //
+//   //               borderRadius: BorderRadius.circular(12),
+//   //
+//   //               gradient: LinearGradient(
+//   //
+//   //                 colors: [Colors.blueAccent.shade100, Colors.blueAccent.shade700],
+//   //
+//   //                 begin: Alignment.topLeft,
+//   //
+//   //                 end: Alignment.bottomRight,
+//   //
+//   //               ),
+//   //
+//   //             ),
+//   //
+//   //             child: ListTile(
+//   //
+//   //               contentPadding: EdgeInsets.all(16),
+//   //
+//   //               title: Text(
+//   //
+//   //                 product['name'],
+//   //
+//   //                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+//   //
+//   //               ),
+//   //
+//   //               subtitle: Column(
+//   //
+//   //                 crossAxisAlignment: CrossAxisAlignment.start,
+//   //
+//   //                 children: [
+//   //
+//   //                   Text(
+//   //
+//   //                     'Category: ${product['category']}',
+//   //
+//   //                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.yellowAccent),
+//   //
+//   //                   ),
+//   //
+//   //                   SizedBox(height: 4),
+//   //
+//   //                   Text(
+//   //
+//   //                     'MRP: ₹${product['sellPrice']}',
+//   //
+//   //                     style: TextStyle(fontSize: 14, color: Colors.redAccent, fontWeight: FontWeight.w500),
+//   //
+//   //                   ),
+//   //
+//   //                   Text(
+//   //
+//   //                     'Sell Price: ₹${product['price']}',
+//   //
+//   //                     style: TextStyle(fontSize: 14, color: Colors.greenAccent, fontWeight: FontWeight.w500),
+//   //
+//   //                   ),
+//   //
+//   //                 ],
+//   //
+//   //               ),
+//   //
+//   //               trailing: PopupMenuButton<String>(
+//   //
+//   //                 onSelected: (value) {
+//   //
+//   //                   if (value == 'Edit') {
+//   //
+//   //                     Navigator.push(
+//   //
+//   //                       context,
+//   //
+//   //                       MaterialPageRoute(
+//   //
+//   //                         builder: (context) => EditProductPage(product: product),
+//   //
+//   //                       ),
+//   //
+//   //                     ).then((result) {
+//   //
+//   //                       if (result == true) {
+//   //
+//   //                         fetchProducts(); // Refresh products after editing
+//   //
+//   //                       }
+//   //
+//   //                     });
+//   //
+//   //                   } else if (value == 'Delete') {
+//   //
+//   //                     deleteProduct(product['id']); // Delete product
+//   //
+//   //                   }
+//   //
+//   //                 },
+//   //
+//   //                 itemBuilder: (context) => [
+//   //
+//   //                   PopupMenuItem(
+//   //
+//   //                     value: 'Edit',
+//   //
+//   //                     child: Row(
+//   //
+//   //                       children: [
+//   //
+//   //                         Icon(Icons.edit, color: Colors.blue),
+//   //
+//   //                         SizedBox(width: 8),
+//   //
+//   //                         Text('Edit'),
+//   //
+//   //                       ],
+//   //
+//   //                     ),
+//   //
+//   //                   ),
+//   //
+//   //                   PopupMenuItem(
+//   //
+//   //                     value: 'Delete',
+//   //
+//   //                     child: Row(
+//   //
+//   //                       children: [
+//   //
+//   //                         Icon(Icons.delete, color: Colors.red),
+//   //
+//   //                         SizedBox(width: 8),
+//   //
+//   //                         Text('Delete'),
+//   //
+//   //                       ],
+//   //
+//   //                     ),
+//   //
+//   //                   ),
+//   //
+//   //                 ],
+//   //
+//   //               ),
+//   //
+//   //             ),
+//   //
+//   //           ),
+//   //
+//   //         ),
+//   //
+//   //       );
+//   //
+//   //     },
+//   //
+//   //   ),
+//   //
+//   // );
+//
+// }
