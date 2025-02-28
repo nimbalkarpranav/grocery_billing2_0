@@ -11,7 +11,8 @@ class PinScreen extends StatefulWidget {
 
 class _PinScreenState extends State<PinScreen> {
   List<String> pinInputs = ["", "", "", ""];
-  String? pin;
+  final TextEditingController _pinController = TextEditingController();
+  final int _pinLength = 4;
 
   @override
   void initState() {
@@ -20,18 +21,15 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   void checkStoredPin() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    String? savedPin = pref.getString('userPIN'); // ✅ Ensure correct key
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedPin = prefs.getString('userPIN');
     print("Debug - Saved PIN: $savedPin");
   }
-
-
-
 
   void validatePin() async {
     String enteredPin = pinInputs.join();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedPin = prefs.getString('userPIN'); // ✅ Correct key
+    String? savedPin = prefs.getString('userPIN');
 
     print("Entered PIN: $enteredPin");
     print("Saved PIN: $savedPin");
@@ -61,41 +59,30 @@ class _PinScreenState extends State<PinScreen> {
     }
   }
 
-
-
   void updatePinInput(String value) {
     int index = pinInputs.indexOf("");
     if (value == "⌫") {
-      if (index == -1) index = 4; // All boxes filled   , remove last digit
+      if (index == -1) index = 4;
       if (index > 0) pinInputs[index - 1] = "";
     } else if (index < 4) {
       pinInputs[index] = value;
-      if (index == 3) validatePin(); // Validate when all 4 digits are entered
+      if (index == 3) validatePin();
     }
     setState(() {});
   }
 
-  Widget buildPinBoxes() {
+  Widget buildPinIndicators() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(4, (index) {
+        bool isFilled = pinInputs[index].isNotEmpty;
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          width: 50,
-          height: 60,
-          alignment: Alignment.center,
+          width: 15,
+          height: 15,
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blueAccent, width: 2),
-          ),
-          child: Text(
-            pinInputs[index],
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
-            ),
+            shape: BoxShape.circle,
+            color: isFilled ? Colors.blueAccent : Colors.grey.shade400,
           ),
         );
       }),
@@ -109,15 +96,15 @@ class _PinScreenState extends State<PinScreen> {
           updatePinInput(value);
         },
         child: Container(
-          margin: const EdgeInsets.all(8.0),
+          margin: const EdgeInsets.all(10.0),
           alignment: Alignment.center,
           decoration: BoxDecoration(
+            shape: BoxShape.circle,
             gradient: const LinearGradient(
               colors: [Colors.blueAccent, Colors.purpleAccent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -166,7 +153,7 @@ class _PinScreenState extends State<PinScreen> {
         ),
         Row(
           children: [
-            const Spacer(), // To center-align the "0" button
+            const Spacer(),
             buildKeyboardButton("0"),
             buildKeyboardButton("⌫"),
           ],
@@ -178,26 +165,25 @@ class _PinScreenState extends State<PinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Enter PIN",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
-              ),
-              const SizedBox(height: 20),
-              buildPinBoxes(), // Display 4 PIN input boxes
-              const SizedBox(height: 20),
-              buildKeyboard(), // Custom keyboard buttons
-            ],
-          ),
+      backgroundColor: Colors.orange.shade200, // Adjust color based on the image
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Select Account', style: TextStyle(fontSize: 24, color: Colors.black)),
+            SizedBox(height: 20),
+            // Avatar above the PIN Entry
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Icon(Icons.face, size: 50, color: Colors.black), // replace with appropriate avatar
+            ),
+            buildPinIndicators(), // Display PIN dots
+            SizedBox(height: 20),
+            Text('Enter PIN', style: TextStyle(fontSize: 20, color: Colors.black)),
+            Text('Please enter your PIN to proceed', style: TextStyle(fontSize: 16, color: Colors.black)),
+            SizedBox(height: 20),
+            buildKeyboard(), // Numeric keypad
+          ],
         ),
       ),
     );

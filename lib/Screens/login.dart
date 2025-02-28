@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/DataBase/database.dart';
 import 'package:grocery_billing2_0/Screens/profileScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'PinScreen.dart';
-import 'home_screen.dart'; // Or any next screen after login
-class LoginPage extends StatefulWidget {
 
+import 'home_screen.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CanW Grocery Delivery',
+      theme: ThemeData(
+        primarySwatch: Colors.red,
+      ),
+      home: OnboardingScreen(),
+    );
+  }
+}
+
+class OnboardingScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return PageView(
+      children: [
+        LoginPage(),
+        WelcomeBackPage(),
+        CreateAccountPage(),
+      ],
+    );
+  }
+}
+
+// ✅ Login Page with Authentication Logic
+class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -15,236 +45,205 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
 
   bool isLoginMode = true;
+
+  @override
   void initState() {
     super.initState();
     checkLoginStatus();
   }
 
-
-
-  void navigateAfterLogin() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    bool isFirstLogin = pref.getBool('isFirstLogin') ?? true;
-    bool isProfileCompleted = pref.getBool('isProfileCompleted') ?? false;
-
-    if (isFirstLogin || !isProfileCompleted) {
-      await pref.setBool('isFirstLogin', false); // First login complete mark karo
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Profile()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => PinScreen()),
-      );
-    }
-  }
-
-
+  // ✅ Check if user is already logged in
   void checkLoginStatus() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    bool isLoggedIn = pref.getBool('isLoggedIn') ?? false;
-    bool isFirstLogin = pref.getBool('isFirstLogin') ?? true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
 
     if (isLoggedIn) {
-      if (isFirstLogin) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()), // First login pe profile page bhej
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PinScreen()), // Baad me PIN screen pe bhej
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => isFirstLogin ? Profile() :  HomePage(),
+        ),
+      );
     }
   }
 
-
+  // ✅ Handle Login / Registration Logic
   void loginOrRegister() async {
     String username = usernameController.text.trim();
     String password = passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please Fill Up All Fields")),
-      );
+      showErrorDialog("Please fill in all fields");
       return;
     }
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (isLoginMode) {
-      // **Login Mode**
-      var user = await DBHelper.instance.loginUser(username, password);
-      if (user != null) {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        await pref.setBool('isLoggedIn', true);
-        navigateAfterLogin(); // ✅ Fix: Navigate according to Profile Completion
-      }else {
-        _showDialog('Invalid credentials');
+      // ✅ Login: Check stored credentials
+      String? storedUsername = prefs.getString('username');
+      String? storedPassword = prefs.getString('password');
+
+      if (username == storedUsername && password == storedPassword) {
+        await prefs.setBool('isLoggedIn', true);
+        navigateAfterLogin();
+      } else {
+        showErrorDialog("Invalid credentials");
       }
     } else {
-      // **Register Mode**
-      bool userExists = await DBHelper.instance.userExists(username);
+      // ✅ Registration: Save new credentials
+      await prefs.setString('username', username);
+      await prefs.setString('password', password);
+      await prefs.setBool('isFirstLogin', true);
+      await prefs.setBool('isLoggedIn', true);
 
-      if (userExists) {
-        _showDialog('User already exists. Please login.');
-      } else {
-        await DBHelper.instance.registerUser(username, password);
-        _showRegistrationDialog();
-        setState(() {
-          isLoginMode = true; // Registration ke baad login mode pe wapas aayega
-        });
-      }
+      showSuccessDialog();
     }
   }
 
 
+  // ✅ Navigate after login based on first-time login
+  void navigateAfterLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
 
-  void _showDialog(String message) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => isFirstLogin ? Profile() : HomePage(),
+      ),
+    );
+  }
+
+  // ✅ Show Error Dialog
+  void showErrorDialog(String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(backgroundColor: Colors.blue.shade100,
-        title: Text(message, textAlign: TextAlign.center),
+      builder: (context) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: Colors.blue)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("OK")),
         ],
       ),
     );
   }
-  void _showRegistrationDialog() {
+
+  // ✅ Show Success Dialog
+  void showSuccessDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.blue.shade100,
         title: Text("Registration Successful"),
-        content: Text("Do you want to login now?"),
+        content: Text("You can now log in."),
         actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context), // ❌ Close only
-            child: Text("Later",style: TextStyle(color: Colors.white),),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
               setState(() {
                 isLoginMode = true;
               });
             },
-            child: Text("Login Now", style: TextStyle(color: Colors.white)),
+            child: Text("Login Now"),
           ),
         ],
       ),
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isLoginMode ? 'Login Page' : 'Register Page',style: TextStyle(color: Colors.white),),
-        centerTitle: true ,
-        backgroundColor: Colors.blueAccent,
-        elevation: 0,
-      ),
+      backgroundColor: Colors.red[100],
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.lock,
-                  size: 80,
-                  color: Colors.blueAccent,
-                ),
-                SizedBox(height: 30),
-                Text(
-                  isLoginMode ? 'Welcome Back' : 'Create an Account',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    labelText: 'Username',
-                    labelStyle: TextStyle(color: Colors.blueAccent),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.7),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.blueAccent),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                  ),
-                ),
-                SizedBox(height: 15),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: TextStyle(color: Colors.blueAccent),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.7),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.blueAccent),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                  ),
-                ),
-                SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: loginOrRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 5,
-                  ),
-                  child: Text(
-                    isLoginMode ? 'Login' : 'Register',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isLoginMode = !isLoginMode;
-                    });
-                  },
-                  child: Text(
-                    isLoginMode
-                        ? "Don't have an account? Register"
-                        : "Already have an account? Login",
-                    style: TextStyle(color: Colors.blueAccent, fontSize: 16),
-                  ),
-                ),
-              ],
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock, size: 80, color: Colors.redAccent),
+            SizedBox(height: 20),
+            Text(
+              isLoginMode ? 'Welcome Back' : 'Create an Account',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-          ),
+            SizedBox(height: 20),
+            TextField(
+              controller: usernameController,
+              decoration: InputDecoration(labelText: 'Username'),
+            ),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Password'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: loginOrRegister,
+              style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
+              child: Text(isLoginMode ? 'Login' : 'Register'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  isLoginMode = !isLoginMode;
+                });
+              },
+              child: Text(
+                isLoginMode ? "Don't have an account? Register" : "Already have an account? Login",
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ✅ Welcome Back Page (For Returning Users)
+class WelcomeBackPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.red[100],
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Welcome Back', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            TextField(decoration: InputDecoration(labelText: 'Email')),
+            TextField(decoration: InputDecoration(labelText: 'Password'), obscureText: true),
+            TextButton(onPressed: () {}, child: Text('Forgot password?')),
+            SizedBox(height: 20),
+            ElevatedButton(onPressed: () {}, child: Text('Log in')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ✅ Create Account Page (For New Users)
+class CreateAccountPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.red[100],
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Create Account', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            TextField(decoration: InputDecoration(labelText: 'Name')),
+            TextField(decoration: InputDecoration(labelText: 'Email')),
+            TextField(decoration: InputDecoration(labelText: 'Password'), obscureText: true),
+            SizedBox(height: 20),
+            ElevatedButton(onPressed: () {}, child: Text('Sign up')),
+          ],
         ),
       ),
     );
