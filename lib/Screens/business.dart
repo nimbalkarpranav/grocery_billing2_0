@@ -143,18 +143,25 @@ class _BusinessEditState extends State<BusinessEdit> {
 
   Widget _buildTextField(String label, TextEditingController controller, bool isEnabled,
       {TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+        // boxShadow: [
+        //   BoxShadow(color: Colors.blueAccent.withOpacity(0.3), blurRadius: 6, spreadRadius: 2),
+        // ],
+      ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        maxLines: maxLines,
         enabled: isEnabled,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          filled: true,
-          fillColor: Colors.grey.shade200,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );

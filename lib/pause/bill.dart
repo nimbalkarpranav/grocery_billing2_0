@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grocery_billing2_0/pause/inviocebill.dart';
 import '../DataBase/database.dart';
 import '../Product/addproduct.dart';
+import '../Product/productlist.dart';
 import '../customer/customerlist.dart';
 import '../drawer/drawer.dart';
 
@@ -224,7 +225,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => AddProductPage()));
+                              builder: (context) => ProductListPage()));
                     },
                     icon: Icon(Icons.add_circle, color: Colors.blue, size: 30),
                   ),

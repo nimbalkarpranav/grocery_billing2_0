@@ -112,11 +112,11 @@ class _ProfileState extends State<Profile> {
       margin: EdgeInsets.symmetric(vertical: 8),
       padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white70,
+        color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.blueAccent.withOpacity(0.3), blurRadius: 6, spreadRadius: 2),
-        ],
+        // boxShadow: [
+        //   BoxShadow(color: Colors.blueAccent.withOpacity(0.3), blurRadius: 6, spreadRadius: 2),
+        // ],
       ),
       child: TextField(
         controller: controller,
@@ -135,7 +135,7 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: drawerPage(),
-      backgroundColor: Colors.blue[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text("Profile", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         centerTitle: true,
@@ -152,53 +152,50 @@ class _ProfileState extends State<Profile> {
             ),
         ],
       ),
-      body: Container(
-        color: Colors.blue[50], // 🔹 Fix: Background color change to match entire screen
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: isEdit ? _pickImage : null,
-                child: Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    CircleAvatar(
-                      radius: 70,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage: _imagePath != null && File(_imagePath!).existsSync()
-                          ? FileImage(File(_imagePath!))
-                          : AssetImage('assetsimage/propic.jpeg') as ImageProvider,
-                    ),
-                    if (isEdit)
-                      Container(
-                        decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.camera_alt, color: Colors.white70, size: 24),
-                      ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              _buildTextField("Name", pName),
-              _buildTextField("Email", pEmail),
-              _buildTextField("Phone", pPhone, keyboardType: TextInputType.phone),
-              _buildTextField("Address", pAddress),
-              _buildTextField("PIN", pPin, keyboardType: TextInputType.number),
-              SizedBox(height: 20),
-              if (isEdit)
-                ElevatedButton(
-                  onPressed: _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent, // 🔹 Fix: Button color now matches theme
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: isEdit ? _pickImage : null,
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 70,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: _imagePath != null && File(_imagePath!).existsSync()
+                        ? FileImage(File(_imagePath!))
+                        : AssetImage('assetsimage/propic.jpeg') as ImageProvider,
                   ),
-                  child: Text("SAVE ", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  if (isEdit)
+                    Container(
+                      decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                      padding: EdgeInsets.all(6),
+                      child: Icon(Icons.camera_alt, color: Colors.white70, size: 24),
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
+            _buildTextField("Name", pName),
+            _buildTextField("Email", pEmail),
+            _buildTextField("Phone", pPhone, keyboardType: TextInputType.phone),
+            _buildTextField("Address", pAddress),
+            _buildTextField("PIN", pPin, keyboardType: TextInputType.number),
+            SizedBox(height: 20),
+            if (isEdit)
+              ElevatedButton(
+                onPressed: _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent, // 🔹 Fix: Button color now matches theme
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
                 ),
-            ],
-          ),
+                child: Text("SAVE ", style: TextStyle(fontSize: 18, color: Colors.white)),
+              ),
+          ],
         ),
       ),
 
