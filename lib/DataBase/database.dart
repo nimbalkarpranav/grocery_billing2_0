@@ -19,12 +19,13 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6, // Incremented version to 6 for new tables
       onCreate: _createDB,
     );
   }
 
   Future _createDB(Database db, int version) async {
+    // Existing tables
     await db.execute('''
           CREATE TABLE users(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +92,28 @@ class DBHelper {
       FOREIGN KEY (customer_id) REFERENCES customers (id),
       FOREIGN KEY (product_id) REFERENCES products (id)
     )''');
+
+    // New tables for invoices and invoice items
+    await db.execute('''CREATE TABLE invoices (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER NOT NULL,
+      total_amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      FOREIGN KEY (customer_id) REFERENCES customers (id)
+    )''');
+
+    await db.execute('''CREATE TABLE invoice_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      quantity INTEGER NOT NULL,
+      price REAL NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoices (id),
+      FOREIGN KEY (product_id) REFERENCES products (id)
+    )''');
   }
+
+  // Existing methods (unchanged)
   Future<bool> isFirstLogin() async {
     final db = await instance.database;
     final res = await db.query('users', limit: 1);
@@ -100,13 +122,12 @@ class DBHelper {
     }
     return true; // If no user exists, it's a first login
   }
+
   Future<void> setFirstLoginCompleted() async {
     final db = await instance.database;
     await db.update('users', {'firstLogin': 0}, where: 'id = ?', whereArgs: [1]);
   }
 
-
-  // User Management
   Future<int> registerUser(String username, String password) async {
     try {
       final db = await database;
@@ -116,14 +137,12 @@ class DBHelper {
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
       return res;
-    }
-    catch (e) {
+    } catch (e) {
       throw Exception('Error registering user: $e');
     }
   }
 
-  Future<Map<String, dynamic>?> loginUser(
-      String username, String password) async {
+  Future<Map<String, dynamic>?> loginUser(String username, String password) async {
     final db = await database;
     final res = await db.query(
       'users',
@@ -132,7 +151,6 @@ class DBHelper {
     );
     return res.isNotEmpty ? res.first : null;
   }
-
 
   Future<bool> userExists(String username) async {
     final db = await database;
@@ -149,7 +167,6 @@ class DBHelper {
     return await db.query('users');
   }
 
-  // Pin Management
   Future<String?> getPin() async {
     final db = await database;
     final res = await db.query('pin', limit: 1);
@@ -168,22 +185,19 @@ class DBHelper {
 
   Future<int> deletePin() async {
     final db = await database;
-    await db.update('users', {'firstLogin': 1});  // Logout state set karna
+    await db.update('users', {'firstLogin': 1}); // Logout state set karna
     return await db.delete('pin');
   }
 
-
-  // Clear all data (Optional utility for debugging)
   Future<void> clearAllData() async {
     final db = await database;
     await db.delete('users');
     await db.delete('pin');
   }
 
-
   Future<int> insertBusiness(Map<String, dynamic> business) async {
     final db = await instance.database;
-    return await db.insert('business', business, conflictAlgorithm: ConflictAlgorithm.replace); // Yeh add kar
+    return await db.insert('business', business, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<int> updateBusiness(Map<String, dynamic> business) async {
@@ -196,12 +210,10 @@ class DBHelper {
     );
   }
 
-
   Future<List<Map<String, dynamic>>> fetchBusinesses() async {
     final db = await instance.database;
     return await db.query('business');
   }
-
 
   Future<int> deleteBusiness(int id) async {
     final db = await instance.database;
@@ -211,6 +223,7 @@ class DBHelper {
       whereArgs: [id],
     );
   }
+
   Future<Map<String, dynamic>?> fetchProfile() async {
     final db = await instance.database;
     final result = await db.query('profile');
@@ -239,8 +252,6 @@ class DBHelper {
     );
   }
 
-  // CRUD for Categories
-  // CRUD for Categories
   Future<int> insertCategory(Map<String, dynamic> category) async {
     final db = await instance.database;
     return await db.insert('categories', category);
@@ -251,7 +262,6 @@ class DBHelper {
     return await db.query('categories');
   }
 
-  // CRUD for Products
   Future<int> insertProduct(Map<String, dynamic> product) async {
     final db = await instance.database;
     return await db.insert('products', product);
@@ -281,25 +291,16 @@ class DBHelper {
     );
   }
 
-
-  // CRUD for Customers
-  //////////////////////
-  //////////////////////
-  //////////////////////
-  // Insert new customer
   Future<int> insertCustomer(Map<String, dynamic> customer) async {
     final db = await instance.database;
     return await db.insert('customers', customer);
   }
 
-
-  // Fetch all customers
   Future<List<Map<String, dynamic>>> fetchCustomers() async {
     final db = await instance.database;
     return await db.query('customers');
   }
 
-  // Update customer details
   Future<int> updateCustomer(Map<String, dynamic> customerData) async {
     final db = await database;
     return await db.update(
@@ -314,10 +315,6 @@ class DBHelper {
     );
   }
 
-
-
-
-  // Delete a customer
   Future<int> deleteCustomer(int id) async {
     final db = await instance.database;
     return await db.delete(
@@ -327,12 +324,8 @@ class DBHelper {
     );
   }
 
-
-
-  // CRUD for Payment Details
-
   Future<int> insertPaymentDetail(Map<String, dynamic> paymentDetail) async {
-    final db = await database; // Assuming database is initialized
+    final db = await database;
     return await db.insert('payment_details', paymentDetail);
   }
 
@@ -358,10 +351,58 @@ class DBHelper {
   Future<int> deletePaymentDetail(int id) async {
     final db = await instance.database;
     return await db.delete(
-        'payment_details',
-        where: 'id = ?',
-        whereArgs: [id],
-        );}
+      'payment_details',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 
+  // New methods for invoices and invoice items
+  Future<int> saveInvoice(Map<String, dynamic> invoice) async {
+    final db = await database;
+    return await db.insert('invoices', invoice);
+  }
 
+  Future<int> saveInvoiceItem(Map<String, dynamic> item) async {
+    final db = await database;
+    return await db.insert('invoice_items', item);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchInvoices() async {
+    final db = await database;
+    return await db.query('invoices');
+  }
+
+  Future<Map<String, dynamic>> fetchInvoiceById(int id) async {
+    final db = await database;
+    final result = await db.query('invoices', where: 'id = ?', whereArgs: [id]);
+    return result.first;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchInvoiceItems(int invoiceId) async {
+    final db = await database;
+    return await db.query('invoice_items', where: 'invoice_id = ?', whereArgs: [invoiceId]);
+  }
+
+  Future<Map<String, dynamic>> fetchInvoiceWithCustomer(int invoiceId) async {
+    final db = await database;
+    final result = await db.rawQuery('''
+      SELECT 
+        invoices.id AS invoice_id,
+        invoices.total_amount,
+        invoices.date,
+        customers.id AS customer_id,
+        customers.name AS customer_name,
+        customers.phone AS customer_phone,
+        customers.email AS customer_email
+      FROM invoices
+      INNER JOIN customers ON invoices.customer_id = customers.id
+      WHERE invoices.id = ?
+    ''', [invoiceId]);
+
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    throw Exception('Invoice not found');
+  }
 }
