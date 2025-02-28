@@ -104,6 +104,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
           0.0, (sum, product) => sum + (product['price'] * product['quantity']));
     });
   }
+  //mmmmmmm
 
   Widget tableCell(String text, [bool isHeader = false]) {
     return Padding(

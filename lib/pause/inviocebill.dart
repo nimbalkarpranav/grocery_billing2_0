@@ -16,6 +16,7 @@ class _InvoiceListState extends State<InvoiceList> {
     super.initState();
     _loadInvoices();
   }
+  //==============================
 
   Future<void> _loadInvoices() async {
     final invoices = await _dbHelper.fetchInvoices();

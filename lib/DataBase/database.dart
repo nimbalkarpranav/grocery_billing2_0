@@ -378,6 +378,7 @@ class DBHelper {
     final result = await db.query('invoices', where: 'id = ?', whereArgs: [id]);
     return result.first;
   }
+  //''''''''
 
   Future<List<Map<String, dynamic>>> fetchInvoiceItems(int invoiceId) async {
     final db = await database;
