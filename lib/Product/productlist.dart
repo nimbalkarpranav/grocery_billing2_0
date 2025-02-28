@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:grocery_billing2_0/drawer/drawer.dart';
 import '../DataBase/database.dart';
-import 'addproduct.dart';
-import 'editeProduct.dart';
+import '../drawer/drawer.dart';
 
 class ProductListPage extends StatefulWidget {
   @override
@@ -11,8 +9,24 @@ class ProductListPage extends StatefulWidget {
 
 class _ProductListPageState extends State<ProductListPage> {
   List<Map<String, dynamic>> products = [];
+  List<String> categories = [];
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _mrpController = TextEditingController();
+  final TextEditingController _sellPriceController = TextEditingController();
+  final TextEditingController _newCategoryController = TextEditingController();
 
-  /// Fetch products from the database
+  int? _editingProductId;
+  String? _selectedCategory;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+    fetchCategories();
+  }
+
   Future<void> fetchProducts() async {
     try {
       final data = await DBHelper.instance.fetchProducts();
@@ -23,42 +37,20 @@ class _ProductListPageState extends State<ProductListPage> {
       }
     } catch (e) {
       print('Error fetching products: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching products')),
-      );
     }
   }
 
-  /// Delete product from the database
-  Future<void> deleteProduct(int id) async {
-    final confirmation = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Product', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('Are you sure you want to delete this product?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmation == true) {
-      await DBHelper.instance.deleteProduct(id);
-      fetchProducts(); // Refresh list
+  Future<void> fetchCategories() async {
+    try {
+      final data = await DBHelper.instance.fetchCategories();
+      if (mounted) {
+        setState(() {
+          categories = data.map<String>((cat) => cat['name'].toString()).toList();
+        });
+      }
+    } catch (e) {
+      print('Error fetching categories: $e');
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProducts(); // Fetch products on page load
   }
 
   @override
@@ -71,114 +63,246 @@ class _ProductListPageState extends State<ProductListPage> {
         elevation: 4,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddProductPage()),
-              );
-              if (result == true) {
-                fetchProducts(); // Refresh products
-              }
-            },
+            icon: Icon(Icons.add, size: 33),
+            onPressed: () => _showProductDialog(),
           ),
         ],
       ),
-      body: products.isEmpty
-          ? Center(
-        child: Text(
-          'No Products Found',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
-        ),
-      )
-          : ListView.builder(
+      body: ListView.builder(
         itemCount: products.length,
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         itemBuilder: (context, index) {
           final product = products[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Card(
-              elevation: 6,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    colors: [Colors.blueAccent.shade100, Colors.blueAccent.shade700],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          return Card(
+            margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            elevation: 2,
+            child: ListTile(
+              title: Text(product['name']),
+              subtitle: Text("Category: ${product['category']}\nMRP: ₹${product['price']} | Selling Price: ₹${product['sellPrice']}"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () => _showProductDialog(productId: product['id']),
                   ),
-                ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(16),
-                  title: Text(
-                    product['name'],
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _confirmDelete(product['id']),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Category: ${product['category']}',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.yellowAccent),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'MRP: ₹${product['sellPrice']}',
-                        style: TextStyle(fontSize: 14, color: Colors.redAccent, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        'Sell Price: ₹${product['price']}',
-                        style: TextStyle(fontSize: 14, color: Colors.greenAccent, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'Edit') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProductPage(product: product),
-                          ),
-                        ).then((result) {
-                          if (result == true) {
-                            fetchProducts(); // Refresh products after editing
-                          }
-                        });
-                      } else if (value == 'Delete') {
-                        deleteProduct(product['id']); // Delete product
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'Edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, color: Colors.blue),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'Delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Delete'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _confirmDelete(int productId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Delete'),
+        content: Text('Are you sure you want to delete this product?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await DBHelper.instance.deleteProduct(productId);
+              fetchProducts();
+              Navigator.pop(context);
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProductDialog({int? productId}) async {
+    if (categories.isEmpty) {
+      await fetchCategories(); // Fetch categories if the list is empty
+    }
+
+    if (productId != null) {
+      final product = products.firstWhere((p) => p['id'] == productId);
+      _nameController.text = product['name'];
+      _selectedCategory = categories.contains(product['category']) ? product['category'] : null;
+      _mrpController.text = product['price'].toString();
+      _sellPriceController.text = product['sellPrice'].toString();
+      _editingProductId = productId;
+    } else {
+      _nameController.clear();
+      _selectedCategory = null;
+      _mrpController.clear();
+      _sellPriceController.clear();
+      _editingProductId = null;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setInnerState) {
+            return AlertDialog(
+              backgroundColor: Colors.grey.shade200,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              title: Text(_editingProductId == null ? "Add Product" : "Edit Product"),
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: "Product Name",
+                        prefixIcon: Icon(Icons.label, color: Colors.blueAccent),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) => value!.isEmpty ? 'Required field' : null,
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      decoration: InputDecoration(
+                        labelText: "Category",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      items: categories.map((category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (value) => setInnerState(() => _selectedCategory = value),
+                      validator: (value) => value == null ? 'Please select a category' : null,
+                    ),
+                    TextButton(
+                      child: Text('Add New Category', style: TextStyle(color: Colors.blueAccent)),
+                      onPressed: () async {
+                        await _addCategory();
+                        setInnerState(() {});
+                      },
+                    ),
+                    TextFormField(
+                      controller: _mrpController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: "MRP",
+                        prefixIcon: Icon(Icons.money, color: Colors.blueAccent),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) return 'Required field';
+                        if (double.tryParse(value) == null) return 'Invalid number';
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: _sellPriceController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: "Selling Price",
+                        prefixIcon: Icon(Icons.attach_money, color: Colors.blueAccent),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) return 'Required field';
+                        if (double.tryParse(value) == null) return 'Invalid number';
+                        final mrp = double.tryParse(_mrpController.text) ?? 0;
+                        final sellPrice = double.tryParse(value) ?? 0;
+                        if (sellPrice > mrp) return 'Cannot exceed MRP';
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel', style: TextStyle(color: Colors.red)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      final mrp = double.parse(_mrpController.text);
+                      final sellPrice = double.parse(_sellPriceController.text);
+
+                      if (sellPrice > mrp) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Selling price cannot exceed MRP'), backgroundColor: Colors.red),
+                        );
+                        return;
+                      }
+
+                      Map<String, dynamic> productData = {
+                        'name': _nameController.text,
+                        'category': _selectedCategory,
+                        'price': mrp,
+                        'sellPrice': sellPrice,
+                      };
+
+                      if (_editingProductId == null) {
+                        await DBHelper.instance.insertProduct(productData);
+                      } else {
+                        productData['id'] = _editingProductId;
+                        await DBHelper.instance.updateProduct(productData);
+                      }
+
+                      fetchProducts();
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text(_editingProductId == null ? 'Add' : 'Update', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _addCategory() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add New Category'),
+        content: TextField(
+          controller: _newCategoryController,
+          decoration: InputDecoration(
+            labelText: 'Category Name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (_newCategoryController.text.isNotEmpty) {
+                await DBHelper.instance.insertCategory({
+                  'name': _newCategoryController.text
+                });
+                await fetchCategories();
+                setState(() => _selectedCategory = _newCategoryController.text);
+                _newCategoryController.clear();
+                Navigator.pop(context);
+              }
+            },
+            child: Text('Add'),
+          ),
+        ],
       ),
     );
   }

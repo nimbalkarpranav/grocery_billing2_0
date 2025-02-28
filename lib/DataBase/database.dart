@@ -246,10 +246,12 @@ class DBHelper {
     return await db.insert('categories', category);
   }
 
+
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final db = await instance.database;
-    return await db.query('categories');
+    return await db.query('categories', orderBy: 'name ASC');
   }
+
 
   // CRUD for Products
   Future<int> insertProduct(Map<String, dynamic> product) async {
