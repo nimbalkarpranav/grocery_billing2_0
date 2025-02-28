@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.blueAccent[100],
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -205,7 +205,7 @@ class WelcomeBackPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.blueAccent,
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -230,7 +230,7 @@ class CreateAccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.blueAccent[100],
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
