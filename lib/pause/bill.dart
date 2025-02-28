@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/pause/inviocebill.dart';
 import '../DataBase/database.dart';
 import '../Product/addproduct.dart';
 import '../customer/customerlist.dart';
@@ -99,9 +100,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   void _calculateTotalAmount() {
     setState(() {
       _totalAmount = _selectedProducts.fold(
-          0.0,
-              (sum, product) =>
-          sum + (product['price'] * product['quantity']));
+          0.0, (sum, product) => sum + (product['price'] * product['quantity']));
     });
   }
 
@@ -127,9 +126,46 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
         backgroundColor: Colors.blueAccent,
         actions: [
           TextButton(
-            onPressed: () {},
-            child: Text('SAVE',
-                style: TextStyle(color: Colors.white, fontSize: 17)),
+            onPressed: () async {
+              if (_selectedCustomer == null || _selectedProducts.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Please select a customer and add products.')),
+                );
+                return;
+              }
+
+              // Prepare invoice data
+              final invoice = {
+                'customer_id': _selectedCustomer,
+                'total_amount': _totalAmount,
+                'date': DateTime.now().toString(),
+              };
+
+              // Save invoice to the database
+              final invoiceId = await _dbHelper.saveInvoice(invoice);
+
+              // Save invoice items (products) to the database
+              for (var product in _selectedProducts) {
+                await _dbHelper.saveInvoiceItem({
+                  'invoice_id': invoiceId,
+                  'product_id': product['id'],
+                  'quantity': product['quantity'],
+                  'price': product['price'],
+                });
+              }
+
+              // Navigate to InvoiceList page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => InvoiceList(),
+                ),
+              );
+            },
+            child: Text(
+              'SAVE',
+              style: TextStyle(color: Colors.white, fontSize: 17),
+            ),
           ),
         ],
       ),
@@ -241,15 +277,15 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     IconButton(
-                                      icon: Icon(Icons.remove_circle,size: 20,
-                                          color: Colors.red),
+                                      icon: Icon(Icons.remove_circle,
+                                          size: 20, color: Colors.red),
                                       onPressed: () => _updateQuantity(i, -1),
                                     ),
                                     Text(_selectedProducts[i]['quantity']
                                         .toString()),
                                     IconButton(
-                                      icon: Icon(Icons.add_circle,size: 20,
-                                          color: Colors.green),
+                                      icon: Icon(Icons.add_circle,
+                                          size: 20, color: Colors.green),
                                       onPressed: () => _updateQuantity(i, 1),
                                     ),
                                   ],
