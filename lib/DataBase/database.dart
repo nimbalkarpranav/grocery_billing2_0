@@ -378,11 +378,19 @@ class DBHelper {
     final result = await db.query('invoices', where: 'id = ?', whereArgs: [id]);
     return result.first;
   }
-  //''''''''
 
   Future<List<Map<String, dynamic>>> fetchInvoiceItems(int invoiceId) async {
     final db = await database;
-    return await db.query('invoice_items', where: 'invoice_id = ?', whereArgs: [invoiceId]);
+    return await db.rawQuery('''
+      SELECT 
+        invoice_items.id,
+        invoice_items.quantity,
+        invoice_items.price,
+        products.name AS product_name
+      FROM invoice_items
+      INNER JOIN products ON invoice_items.product_id = products.id
+      WHERE invoice_items.invoice_id = ?
+    ''', [invoiceId]);
   }
 
   Future<Map<String, dynamic>> fetchInvoiceWithCustomer(int invoiceId) async {

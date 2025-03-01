@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grocery_billing2_0/drawer/drawer.dart';
 import '../DataBase/database.dart';
 import 'InvoiceModel.dart';
 
@@ -28,6 +29,7 @@ class _InvoiceListState extends State<InvoiceList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: Text('Invoice List'),
         backgroundColor: Colors.blueAccent,
@@ -39,7 +41,7 @@ class _InvoiceListState extends State<InvoiceList> {
           return Card(
             margin: EdgeInsets.all(8),
             child: ListTile(
-              title: Text('Invoice #${invoice['id']}'),
+              title: Text('Invoice ${invoice['id']}'),
               subtitle: Text('Total: ₹${invoice['total_amount']}'),
               trailing: Text('Date: ${invoice['date']}'),
               onTap: () {
