@@ -125,7 +125,8 @@ class DBHelper {
 
   Future<void> setFirstLoginCompleted() async {
     final db = await instance.database;
-    await db.update('users', {'firstLogin': 0}, where: 'id = ?', whereArgs: [1]);
+    await db.update('users', {'firstLogin': 0},
+        where: 'id = ?', whereArgs: [1]);
   }
 
   Future<int> registerUser(String username, String password) async {
@@ -142,7 +143,8 @@ class DBHelper {
     }
   }
 
-  Future<Map<String, dynamic>?> loginUser(String username, String password) async {
+  Future<Map<String, dynamic>?> loginUser(
+      String username, String password) async {
     final db = await database;
     final res = await db.query(
       'users',
@@ -197,7 +199,8 @@ class DBHelper {
 
   Future<int> insertBusiness(Map<String, dynamic> business) async {
     final db = await instance.database;
-    return await db.insert('business', business, conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.insert('business', business,
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<int> updateBusiness(Map<String, dynamic> business) async {
@@ -331,7 +334,7 @@ class DBHelper {
 
   Future<List<Map<String, dynamic>>> fetchPaymentDetails() async {
     final db = await instance.database;
-    return await db.rawQuery(''' 
+    return await db.rawQuery('''
     SELECT pd.id, pd.amount, pd.date, c.name AS customer_name 
     FROM payment_details pd
     INNER JOIN customers c ON pd.customer_id = c.id

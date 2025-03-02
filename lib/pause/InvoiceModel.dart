@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../DataBase/database.dart';
+import '../drawer/drawer.dart';
 
 class InvoiceDetailsPage extends StatefulWidget {
   final int invoiceId;
@@ -23,7 +24,8 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
 
   Future<void> _loadInvoiceDetails() async {
     try {
-      final invoiceWithCustomer = await _dbHelper.fetchInvoiceWithCustomer(widget.invoiceId);
+      final invoiceWithCustomer =
+          await _dbHelper.fetchInvoiceWithCustomer(widget.invoiceId);
       final invoiceItems = await _dbHelper.fetchInvoiceItems(widget.invoiceId);
       setState(() {
         _invoiceWithCustomer = invoiceWithCustomer;
@@ -46,13 +48,17 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
     }
 
     return Scaffold(
+      drawer: drawerPage(),
       appBar: AppBar(
         title: Text('Invoice Details'),
         backgroundColor: Colors.blueAccent,
         actions: [
-          IconButton(onPressed: () {
-            
-          }, icon: Icon(Icons.local_print_shop_outlined,size: 34,))
+          IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.local_print_shop_outlined,
+                size: 34,
+              ))
         ],
       ),
       body: SingleChildScrollView(
@@ -63,7 +69,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
             // Receipt Header
             Center(
               child: Text(
-                'Invoice ${_invoiceWithCustomer!['invoice_id']}',
+                'Invoice ID : ${_invoiceWithCustomer!['invoice_id']}',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -90,18 +96,23 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Customer Details',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+                    Center(
+                      child: Text(
+                        'Customer Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),
-                    _buildDetailRow('Name', '${_invoiceWithCustomer!['customer_name']}'),
-                    _buildDetailRow('Phone', '${_invoiceWithCustomer!['customer_phone']}'),
-                    _buildDetailRow('Email', '${_invoiceWithCustomer!['customer_email']}'),
+                    _buildDetailRow(
+                        'Name  :', '${_invoiceWithCustomer!['customer_name']}'),
+                    _buildDetailRow('Phone :',
+                        '${_invoiceWithCustomer!['customer_phone']}'),
+                    _buildDetailRow('Email  :',
+                        '${_invoiceWithCustomer!['customer_email']}'),
                   ],
                 ),
               ),
@@ -116,12 +127,14 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Products',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+                    Center(
+                      child: Text(
+                        'Products Details :',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -236,17 +249,21 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Total Amount',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+                    Center(
+                      child: Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),
-                    _buildDetailRow('Subtotal', '₹${_invoiceWithCustomer!['total_amount']}'),
-                    _buildDetailRow('Grand Total', '₹${_invoiceWithCustomer!['total_amount']}'),
+                    _buildDetailRow('Subtotal',
+                        '₹${_invoiceWithCustomer!['total_amount']}'),
+                    _buildDetailRow('Grand Total',
+                        '₹${_invoiceWithCustomer!['total_amount']}'),
                   ],
                 ),
               ),

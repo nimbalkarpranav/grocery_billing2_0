@@ -46,7 +46,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
     setState(() {
       _filteredCustomers = _customers
           .where((customer) =>
-          customer['name'].toLowerCase().contains(query.toLowerCase()))
+              customer['name'].toLowerCase().contains(query.toLowerCase()))
           .toList();
       _showCustomerList = query.isNotEmpty;
     });
@@ -56,7 +56,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
     setState(() {
       _filteredProducts = _products
           .where((product) =>
-          product['name'].toLowerCase().contains(query.toLowerCase()))
+              product['name'].toLowerCase().contains(query.toLowerCase()))
           .toList();
       _showProductList = query.isNotEmpty;
     });
@@ -66,7 +66,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
     setState(() {
       _selectedCustomer = id;
       customerSearchController.text =
-      _customers.firstWhere((c) => c['id'] == id)['name'];
+          _customers.firstWhere((c) => c['id'] == id)['name'];
       _showCustomerList = false;
     });
   }
@@ -74,7 +74,7 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
   void _addProductToInvoice(Map<String, dynamic> product) {
     setState(() {
       final existingProduct = _selectedProducts.firstWhere(
-            (p) => p['id'] == product['id'],
+        (p) => p['id'] == product['id'],
         orElse: () => {},
       );
       if (existingProduct.isNotEmpty) {
@@ -100,23 +100,9 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
 
   void _calculateTotalAmount() {
     setState(() {
-      _totalAmount = _selectedProducts.fold(
-          0.0, (sum, product) => sum + (product['price'] * product['quantity']));
+      _totalAmount = _selectedProducts.fold(0.0,
+          (sum, product) => sum + (product['price'] * product['quantity']));
     });
-  }
-  //mmmmmmm
-
-  Widget tableCell(String text, [bool isHeader = false]) {
-    return Padding(
-      padding: EdgeInsets.all(8),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
   }
 
   @override
@@ -131,7 +117,9 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
             onPressed: () async {
               if (_selectedCustomer == null || _selectedProducts.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Please select a customer and add products.')),
+                  SnackBar(
+                      content:
+                          Text('Please select a customer and add products.')),
                 );
                 return;
               }
@@ -184,7 +172,8 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                       controller: customerSearchController,
                       decoration: InputDecoration(
                         labelText: "Customer Name",
-                        prefixIcon: Icon(Icons.person, color: Colors.blueAccent),
+                        prefixIcon:
+                            Icon(Icons.person, color: Colors.blueAccent),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
@@ -213,7 +202,8 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                       controller: productSearchController,
                       decoration: InputDecoration(
                         labelText: "Product Name",
-                        prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                        prefixIcon:
+                            Icon(Icons.search, color: Colors.blueAccent),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
@@ -259,8 +249,8 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                         },
                         children: [
                           TableRow(
-                            decoration:
-                            BoxDecoration(color: Colors.blueAccent.shade100),
+                            decoration: BoxDecoration(
+                                color: Colors.blueAccent.shade100),
                             children: [
                               tableCell("#", true),
                               tableCell("Product", true),
@@ -300,9 +290,6 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
                         ],
                       ),
                       SizedBox(height: 16),
-                      Text('Total: ₹$_totalAmount',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18)),
                     ],
                   ),
                 ),
@@ -359,6 +346,28 @@ class _InvoiceBillingPageState extends State<InvoiceBillingPage> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomAppBar(
+        child: Center(
+          child: Text('Total: ₹$_totalAmount',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: const Color.fromARGB(255, 20, 192, 31))),
+        ),
+      ),
     );
   }
+}
+
+Widget tableCell(String text, [bool isHeader = false]) {
+  return Padding(
+    padding: EdgeInsets.all(8),
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+      ),
+    ),
+  );
 }
